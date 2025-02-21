@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "match.h"
 #include "drun.h"
-#include "levenshtein.h"
+#include "stringMatch.h"
 
 #define PATH_SEPARATOR ":"
 
@@ -17,7 +17,7 @@ float Drun::matchChance(std::string input)
     {
         return 0;
     }
-    return 1;
+    return 0.75;
 }
 
 std::vector<Match *> Drun::getMatches(std::string input)
@@ -44,9 +44,12 @@ std::vector<Match *> Drun::getMatches(std::string input)
         {
             try
             {
-                if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
+                if (fuzzyMatchScore(input, entry.path().filename()) > 0)
                 {
-                    binaries.push_back(new DrunMatch(entry.path()));
+                    if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
+                    {
+                        binaries.push_back(new DrunMatch(entry.path()));
+                    }
                 }
             }
             catch (const std::filesystem::filesystem_error &e)
@@ -58,7 +61,18 @@ std::vector<Match *> Drun::getMatches(std::string input)
     return binaries;
 }
 
-float DrunMatch::getRelevance(std::string input)
+std::string DrunMatch::getDisplay()
 {
-    return 1.0 / levenshteinDist(input, path.filename().string());
+    return path.filename().string();
+}
+
+bool DrunMatch::run()
+{
+    system(path.string().c_str());
+    return true;
+}
+
+double DrunMatch::getRelevance(std::string input)
+{
+    return fuzzyMatchScore(input, path.filename().string());
 }

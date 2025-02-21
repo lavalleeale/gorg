@@ -7,9 +7,9 @@ class DrunMatch : public Match
 {
 public:
     DrunMatch(std::filesystem::path path) : path(path) {};
-    std::string getDisplay() { return path.filename().string(); };
-    void run() { system(path.string().c_str()); };
-    float getRelevance(std::string input);
+    std::string getDisplay();
+    bool run();
+    double getRelevance(std::string input);
     ~DrunMatch() {};
 
 private:
