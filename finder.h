@@ -2,15 +2,13 @@
 #define __finder_h__
 #include <vector>
 #include "plugin.h"
-#include "drun.h"
-#include "equation.h"
 #include "match.h"
 class Finder
 {
 public:
     Finder();
     ~Finder();
-    bool RunMatch();
+    RunResult RunMatch();
     void find(const std::string &query);
     const std::vector<Match *> &getMatches() const { return matches; }
 

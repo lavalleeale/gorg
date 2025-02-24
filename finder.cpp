@@ -1,9 +1,13 @@
 #include "finder.h"
+#include "drun.h"
+#include "equation.h"
+#include "chat.h"
 
 Finder::Finder()
 {
     plugins.push_back(new Drun());
     plugins.push_back(new Equation());
+    plugins.push_back(new Chat());
 }
 
 Finder::~Finder()
@@ -18,9 +22,13 @@ Finder::~Finder()
     }
 }
 
-bool Finder::RunMatch()
+RunResult Finder::RunMatch()
 {
-    return !(matches.empty() || !matches[0]->run());
+    if (matches.empty())
+    {
+        return CONTINUE;
+    }
+    return matches[0]->run();
 }
 
 void Finder::find(const std::string &query)

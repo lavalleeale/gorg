@@ -3,7 +3,26 @@
 #include <iostream>
 #include "plugin.h"
 #include "finder.h"
-#include "widgets.h"
+
+void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::Box &mainVerticalLayout, Gtk::Box &options, Gtk::Widget *takeoverWidget = nullptr)
+{
+    switch (result)
+    {
+    case RunResult::CLOSE:
+        app->quit();
+        break;
+    case RunResult::TAKEOVER:
+        if (takeoverWidget)
+        {
+            options.hide();
+            mainVerticalLayout.add(*takeoverWidget);
+            takeoverWidget->show();
+        }
+        break;
+    default:
+        break;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -38,14 +57,18 @@ int main(int argc, char *argv[])
 
     mainVerticalLayout.add(prompt);
     prompt.show();
-    prompt.signal_activate().connect([&app, &finder]()
+    prompt.signal_activate().connect([&app, &finder, &mainVerticalLayout, &options]()
                                      {
-                                         if (finder.RunMatch())
-                                         {
-                                             app->quit();
-                                         } });
-    prompt.signal_changed().connect([&prompt, &options, &finder, &app]()
+                                        if (!finder.getMatches().empty() && options.is_visible()) {
+                                         handleRunResult(finder.RunMatch(), app, mainVerticalLayout, options, finder.getMatches()[0]->getWidget());
+                                        } });
+    prompt.signal_changed().connect([&prompt, &options, &finder, &app, &mainVerticalLayout]()
                                     { 
+                                        if (!options.is_visible())
+                                        {
+                                            mainVerticalLayout.remove(*finder.getMatches()[0]->getWidget());
+                                            options.show();
+                                        }
                                         for (auto child : options.get_children())
                                         {
                                             options.remove(*child);
@@ -60,12 +83,9 @@ int main(int argc, char *argv[])
                                                 break;
                                             }
                                             Gtk::Button *button = Gtk::manage(new Gtk::Button(match->getDisplay()));
-                                            button->signal_clicked().connect([match, &app]()
+                                            button->signal_clicked().connect([match, &app, &options, &mainVerticalLayout]()
                                                                              {
-                                                                                 if (match->run())
-                                                                                 {
-                                                                                     app->quit();
-                                                                                 }
+                                                                                    handleRunResult(match->run(), app, mainVerticalLayout, options, match->getWidget());
                                                                              });
                                             options.add(*button);
                                             button->show();

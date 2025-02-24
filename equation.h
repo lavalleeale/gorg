@@ -3,13 +3,15 @@
 #include "plugin.h"
 #include "match.h"
 #include <exprtk.hpp>
+#include <gtkmm/widget.h>
 class EquationMatch : public Match
 {
 public:
     EquationMatch(std::string input, float result) : input(input), result(result) {};
     std::string getDisplay();
-    bool run() { return false; };
+    RunResult run() { return CONTINUE; };
     double getRelevance(std::string input);
+    Gtk::Widget *getWidget() { return nullptr; };
     ~EquationMatch() {};
 
 private:

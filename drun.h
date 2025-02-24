@@ -3,13 +3,15 @@
 #include "plugin.h"
 #include "match.h"
 #include <filesystem>
+#include <gtkmm/widget.h>
 class DrunMatch : public Match
 {
 public:
     DrunMatch(std::filesystem::path path) : path(path) {};
     std::string getDisplay();
-    bool run();
+    RunResult run();
     double getRelevance(std::string input);
+    Gtk::Widget *getWidget() { return nullptr; };
     ~DrunMatch() {};
 
 private:

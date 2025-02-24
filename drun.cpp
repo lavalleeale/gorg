@@ -8,6 +8,7 @@
 #include "match.h"
 #include "drun.h"
 #include "stringMatch.h"
+#include <unistd.h>
 
 #define PATH_SEPARATOR ":"
 
@@ -66,10 +67,23 @@ std::string DrunMatch::getDisplay()
     return path.filename().string();
 }
 
-bool DrunMatch::run()
+RunResult DrunMatch::run()
 {
-    system(path.string().c_str());
-    return true;
+    pid_t pid = fork();
+    if (pid == 0) // Child process
+    {
+        // Detach from parent process
+        setsid();
+        // Execute the command using the shell
+        execl(path.c_str(), path.c_str(), nullptr);
+        _exit(127); // Exit child if execl fails
+    }
+    else if (pid < 0) // Fork failed
+    {
+        return CLOSE;
+    }
+    // Parent continues without waiting
+    return CLOSE;
 }
 
 double DrunMatch::getRelevance(std::string input)

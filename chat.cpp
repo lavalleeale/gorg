@@ -1,13 +1,16 @@
 #include <iostream>
 #include <string>
 #include <curl/curl.h>
-#include <nlohmann/json.hpp> // For JSON parsing; install from https://github.com/nlohmann/json
+#include <nlohmann/json.hpp>
+#include "chat.h"
+#include <thread>
 
 using json = nlohmann::json;
 
 // This callback gets called for each chunk of data received.
 size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
+    ChatMatch *chatMatch = static_cast<ChatMatch *>(userdata);
     size_t totalSize = size * nmemb;
     std::string data(ptr, totalSize);
 
@@ -31,15 +34,13 @@ size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
         // Check for the stream termination signal (if provided by API)
         if (line == "[DONE]")
         {
-            std::cout << "Stream completed." << std::endl;
             continue;
         }
 
         try
         {
             auto j = json::parse(line);
-            std::cout << "Received message: " << j["choices"][0]["delta"]["content"] << std::endl;
-            std::cout << j["choices"].size() << std::endl;
+            chatMatch->updateResponse(j["choices"][0]["delta"]["content"]);
         }
         catch (json::parse_error &e)
         {
@@ -51,52 +52,77 @@ size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
     return totalSize;
 }
 
-// int main()
-// {
-//     CURL *curl = curl_easy_init();
-//     if (!curl)
-//     {
-//         std::cerr << "Failed to initialize curl." << std::endl;
-//         return 1;
-//     }
+RunResult ChatMatch::run()
+{
+    CURL *curl = curl_easy_init();
+    if (!curl)
+    {
+        std::cerr << "Failed to initialize curl." << std::endl;
+        return CONTINUE;
+    }
 
-//     // OpenAI API URL for chat completions
-//     const std::string url = "http://localhost:11434/v1/chat/completions";
+    // OpenAI API URL for chat completions
+    const std::string url = "http://localhost:11434/v1/chat/completions";
 
-//     // Construct your JSON request payload
-//     json requestPayload = {
-//         {"model", "llama3.2:1b"},
-//         {"stream", true},
-//         {"messages",
-//          {
-//              {{"role", "user"}, {"content", "Hello, how are you?"}},
-//          }},
-//     };
+    // Construct your JSON request payload
+    json requestPayload = {
+        {"model", "llama3.2:1b"},
+        {"stream", true},
+        {"messages",
+         {
+             {{"role", "user"}, {"content", input}},
+         }},
+    };
 
-//     std::string requestData = requestPayload.dump();
+    std::string requestData = requestPayload.dump();
 
-//     struct curl_slist *headers = nullptr;
-//     // Set your OpenAI API key here
-//     std::string apiKey = "Bearer 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";
-//     headers = curl_slist_append(headers, ("Authorization: " + apiKey).c_str());
-//     headers = curl_slist_append(headers, "Content-Type: application/json");
+    struct curl_slist *headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
 
-//     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-//     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-//     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestData.c_str());
-//     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    // Replace the synchronous call with a background thread:
+    std::thread backgroundThread([curl, headers, requestData, url, chatMatchPointer = this]()
+                                 {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestData.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, chatMatchPointer);
 
-//     // For streaming, you may want to disable buffering:
-//     // curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, 1024L);
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            std::cerr << "curl_easy_perform() failed: "
+                      << curl_easy_strerror(res) << std::endl;
+        }
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl); });
+    backgroundThread.detach();
 
-//     CURLcode res = curl_easy_perform(curl);
-//     if (res != CURLE_OK)
-//     {
-//         std::cerr << "curl_easy_perform() failed: "
-//                   << curl_easy_strerror(res) << std::endl;
-//     }
+    return TAKEOVER;
+}
 
-//     curl_slist_free_all(headers);
-//     curl_easy_cleanup(curl);
-//     return 0;
-// }
+ChatMatch::ChatMatch(std::string input)
+{
+    this->input = input;
+    // Make sure lines wrap properly
+    label.set_line_wrap(true);
+    label.set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
+    label.set_max_width_chars(40);
+    label.set_size_request(50, -1);
+}
+
+std::string ChatMatch::getDisplay()
+{
+    return "Ask ChatGPT: " + input;
+}
+
+double ChatMatch::getRelevance(std::string input)
+{
+    return 0.75;
+}
+
+void ChatMatch::updateResponse(std::string response)
+{
+    std::string newText = label.get_text() + response;
+    label.set_text(newText);
+}
