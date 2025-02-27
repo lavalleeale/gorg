@@ -18,7 +18,7 @@ float Drun::matchChance(std::string input)
     {
         return 0;
     }
-    return 0.75;
+    return 0.5;
 }
 
 std::vector<Match *> Drun::getMatches(std::string input)
@@ -88,5 +88,5 @@ RunResult DrunMatch::run()
 
 double DrunMatch::getRelevance(std::string input)
 {
-    return fuzzyMatchScore(input, path.filename().string());
+    return 0.5 * fuzzyMatchScore(input, path.filename().string());
 }

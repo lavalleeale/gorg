@@ -2,12 +2,14 @@
 #include "drun.h"
 #include "equation.h"
 #include "chat.h"
+#include "run.h"
 
 Finder::Finder()
 {
     plugins.push_back(new Drun());
     plugins.push_back(new Equation());
     plugins.push_back(new Chat());
+    plugins.push_back(new Run());
 }
 
 Finder::~Finder()
