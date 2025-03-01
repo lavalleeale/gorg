@@ -1,3 +1,4 @@
+#include "TransparentWindow.h"
 #include <gtkmm.h>
 #include <gtkmm/application.h>
 #include <iostream>
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
     auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
     Finder finder;
 
-    Gtk::Window window;
+    TransparentWindow window;
     auto action_group = Gio::SimpleActionGroup::create();
     int width = 600, height = 200;
     window.set_default_size(width, height);
@@ -47,6 +48,42 @@ int main(int argc, char *argv[])
     window.set_modal(true);
     app->set_action_group(action_group);
 
+    // Set CSS provider for styling
+    auto css_provider = Gtk::CssProvider::create();
+    css_provider->load_from_data(R"(
+        button {
+            color: white;
+            background-color: rgba(40, 40, 80, 0.2);
+            background-image: none;
+            border-radius: 10px;
+            padding: 5px;
+            margin: 2px 10px;
+        }
+        button:hover, button:focus {
+            background-color: rgba(60, 60, 120, 0.8);
+        }
+        entry {
+            color: white;
+            background-color: rgba(40, 40, 80, 0.2);
+            background-image: none;
+            border-radius: 10px;
+            padding: 5px;
+            margin: 10px;
+        }
+        label {
+            color: white;
+            background-color: rgba(40, 40, 80, 0.2);
+            background-image: none;
+            border-radius: 10px;
+            padding: 5px;
+            margin: 10px;
+        }
+    )");
+    Gtk::StyleContext::add_provider_for_screen(
+        Gdk::Screen::get_default(),
+        css_provider,
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
     Gtk::VBox mainVerticalLayout;
     Gtk::Entry prompt;
     Gtk::ScrolledWindow optionsScroll;
@@ -57,6 +94,7 @@ int main(int argc, char *argv[])
 
     mainVerticalLayout.add(prompt);
     prompt.show();
+    prompt.grab_focus(); // Focus the entry field on startup
     prompt.signal_activate().connect([&app, &finder, &mainVerticalLayout, &options]()
                                      {
                                         if (!finder.getMatches().empty() && options.is_visible()) {
@@ -95,6 +133,10 @@ int main(int argc, char *argv[])
     optionsScroll.show();
     optionsScroll.add(options);
     options.show();
+
+    // Set scrolled window properties
+    optionsScroll.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+    optionsScroll.set_min_content_height(150);
 
     auto quitAction = Gio::SimpleAction::create("quit");
     action_group->add_action(quitAction);
