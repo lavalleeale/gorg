@@ -1,7 +1,7 @@
 #include <gtkmm.h>
 #include <gtkmm/application.h>
 #include <iostream>
-#include "plugin.h"
+#include "plugins/plugin.h"
 #include "finder.h"
 
 void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::Box &mainVerticalLayout, Gtk::Box &options, Gtk::Widget *takeoverWidget = nullptr)

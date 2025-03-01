@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "match.h"
 #include "drun.h"
-#include "stringMatch.h"
+#include <stringMatch.h>
 #include <unistd.h>
 
 #define PATH_SEPARATOR ":"

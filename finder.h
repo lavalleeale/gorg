@@ -1,8 +1,8 @@
 #ifndef __finder_h__
 #define __finder_h__
 #include <vector>
-#include "plugin.h"
-#include "match.h"
+#include "plugins/plugin.h"
+#include "plugins/match.h"
 class Finder
 {
 public:

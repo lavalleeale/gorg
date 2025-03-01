@@ -16,7 +16,7 @@ CXXFLAGS = -std=c++17 -Iinclude $(PKG_CFLAGS)
 LDFLAGS = $(PKG_LIBS)
 
 # Gather all .cpp files and convert them to object file names
-SOURCES = $(wildcard *.cpp)
+SOURCES = $(wildcard **/*.cpp) $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Target executable name

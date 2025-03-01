@@ -1,5 +1,5 @@
 #include "run.h"
-#include "stringMatch.h"
+#include <stringMatch.h>
 #include <fstream>
 #include <iostream>
 
@@ -94,7 +94,11 @@ RunResult RunMatch::run()
         std::string token;
         while (iss >> token)
         {
-            args.push_back(token);
+            // Skip arguments that start with %
+            if (!token.empty() && token[0] != '%')
+            {
+                args.push_back(token);
+            }
         }
         // Build argv vector; safe to use c_str() as strings persist in args vector.
         std::vector<char *> argv;

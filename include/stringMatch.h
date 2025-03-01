@@ -1,3 +1,5 @@
+#ifndef __stringmatch_h__
+#define __stringmatch_h__
 #include <string>
 #include <cctype>
 #include <algorithm>
@@ -7,7 +9,7 @@
 #define CONSECUTIVE_BONUS 10
 #define EXTRA_CHAR_PENALTY 2
 
-double fuzzyMatchScore(const std::string &query, const std::string &candidate)
+inline double fuzzyMatchScore(const std::string &query, const std::string &candidate)
 {
     if (query.empty())
     {
@@ -66,3 +68,4 @@ double fuzzyMatchScore(const std::string &query, const std::string &candidate)
     normalized = std::clamp(normalized, 0.0, 1.0);
     return normalized;
 }
+#endif
