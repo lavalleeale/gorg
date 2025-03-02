@@ -15,6 +15,7 @@ public:
     ~ChatMatch() {};
 
 private:
+    nlohmann::json pluginSettings;
     std::string input;
     std::string responseText;
     Gtk::Label label;

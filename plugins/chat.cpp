@@ -62,7 +62,7 @@ size_t ChatMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *user
 
 RunResult ChatMatch::run()
 {
-    // Set initial response text
+    // Set initial response text from settings
     responseText = "Thinking...";
     signal_update_label.emit();
 
@@ -73,13 +73,12 @@ RunResult ChatMatch::run()
         return CONTINUE;
     }
 
-    // OpenAI API URL for chat completions
-    const std::string url = "http://localhost:11434/v1/chat/completions";
+    // Get API URL from settings
+    const std::string url = pluginSettings.value("apiUrl", "http://localhost:11434/v1/chat/completions");
 
-    auto pluginSettings = Settings::getInstance().getPluginSettings("ai");
     // Construct your JSON request payload
     json requestPayload = {
-        {"model", pluginSettings.value("model", "llama3.2:1b")},
+        {"model", pluginSettings.value("model", "llama2:7b")},
         {"stream", true},
         {"messages",
          {
@@ -121,10 +120,12 @@ ChatMatch::ChatMatch(std::string input)
     this->input = input;
     this->responseText = "";
 
+    pluginSettings = Settings::getInstance().getPluginSettings("ai");
+
     // Make sure lines wrap properly
     label.set_line_wrap(true);
     label.set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
-    label.set_max_width_chars(40);
+    label.set_max_width_chars(pluginSettings.value("maxWidth", 40));
     label.set_size_request(50, -1);
 
     // Connect the signal to update the label text
@@ -139,5 +140,5 @@ std::string ChatMatch::getDisplay()
 
 double ChatMatch::getRelevance(std::string input)
 {
-    return 0.75;
+    return pluginSettings.value("relevanceScore", 0.75);
 }
