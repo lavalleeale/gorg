@@ -20,7 +20,7 @@ SOURCES = $(wildcard **/*.cpp) $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Target executable name
-TARGET = launcher.out 
+TARGET = gorg.out 
 
 # Default target
 all: $(GCH_LIST) $(TARGET)
@@ -44,7 +44,7 @@ clean:
 # Install target for use with Nix
 install: $(TARGET)
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/launcher
+	install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/gorg
 
 .PHONY: debug clean install
 debug: CXXFLAGS += -g -O0

@@ -1,5 +1,5 @@
 {
-  description = "GTK launcher application";
+  description = "Gorg launcher";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -31,9 +31,9 @@
         ];
       in {
         packages = {
-          default = self.packages.${system}.launcher;
-          launcher = pkgs.stdenv.mkDerivation {
-            pname = "launcher";
+          default = self.packages.${system}.gorg;
+          gorg = pkgs.stdenv.mkDerivation {
+            pname = "gorg";
             version = "0.1.0";
 
             src = ./.;
@@ -44,10 +44,10 @@
 
             installPhase = ''
               mkdir -p $out/bin
-              cp launcher.out $out/bin/launcher
+              cp gorg.out $out/bin/gorg
 
               # Wrap the executable with proper environment variables
-              wrapProgram $out/bin/launcher \
+              wrapProgram $out/bin/gorg \
                 --prefix LD_LIBRARY_PATH : "${
                   pkgs.lib.makeLibraryPath dependencies
                 }" \
@@ -57,7 +57,7 @@
             '';
 
             meta = {
-              description = "GTK-based application launcher";
+              description = "Gorg launcher";
               platforms = pkgs.lib.platforms.linux;
             };
           };
