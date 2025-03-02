@@ -8,9 +8,9 @@
 using json = nlohmann::json;
 
 // This callback gets called for each chunk of data received.
-size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
+size_t ChatMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    ChatMatch *chatMatch = static_cast<ChatMatch *>(userdata);
+    ChatMatch *self = static_cast<ChatMatch *>(userdata);
     size_t totalSize = size * nmemb;
     std::string data(ptr, totalSize);
 
@@ -40,7 +40,14 @@ size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
         try
         {
             auto j = json::parse(line);
-            chatMatch->updateResponse(j["choices"][0]["delta"]["content"]);
+            // Extract the new content delta
+            std::string content = j["choices"][0]["delta"]["content"];
+            if (self->responseText == "Thinking...")
+            {
+                self->responseText = "";
+            }
+            self->responseText += content;
+            self->signal_update_label.emit();
         }
         catch (json::parse_error &e)
         {
@@ -54,6 +61,10 @@ size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 
 RunResult ChatMatch::run()
 {
+    // Set initial response text
+    responseText = "Thinking...";
+    signal_update_label.emit();
+
     CURL *curl = curl_easy_init();
     if (!curl)
     {
@@ -80,19 +91,21 @@ RunResult ChatMatch::run()
     headers = curl_slist_append(headers, "Content-Type: application/json");
 
     // Replace the synchronous call with a background thread:
-    std::thread backgroundThread([curl, headers, requestData, url, chatMatchPointer = this]()
+    std::thread backgroundThread([this, curl, headers, requestData, url]()
                                  {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestData.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, chatMatchPointer);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK)
         {
             std::cerr << "curl_easy_perform() failed: "
                       << curl_easy_strerror(res) << std::endl;
+            responseText += "\nError: Failed to get response.";
+            signal_update_label.emit();
         }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl); });
@@ -104,11 +117,17 @@ RunResult ChatMatch::run()
 ChatMatch::ChatMatch(std::string input)
 {
     this->input = input;
+    this->responseText = "";
+
     // Make sure lines wrap properly
     label.set_line_wrap(true);
     label.set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
     label.set_max_width_chars(40);
     label.set_size_request(50, -1);
+
+    // Connect the signal to update the label text
+    signal_update_label.connect([this]()
+                                { label.set_text(this->responseText); });
 }
 
 std::string ChatMatch::getDisplay()
@@ -119,10 +138,4 @@ std::string ChatMatch::getDisplay()
 double ChatMatch::getRelevance(std::string input)
 {
     return 0.75;
-}
-
-void ChatMatch::updateResponse(std::string response)
-{
-    std::string newText = label.get_text() + response;
-    label.set_text(newText);
 }
