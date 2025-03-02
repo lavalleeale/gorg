@@ -6,7 +6,7 @@
 #include <finder.h>
 #include <settings.h>
 
-void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::Box &mainVerticalLayout, Gtk::Box &options, Gtk::Widget *takeoverWidget = nullptr)
+void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::Box &mainVerticalLayout, Gtk::ScrolledWindow &optionsScroll, Gtk::Widget *takeoverWidget = nullptr)
 {
     switch (result)
     {
@@ -16,7 +16,7 @@ void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::
     case RunResult::TAKEOVER:
         if (takeoverWidget)
         {
-            options.hide();
+            optionsScroll.hide();
             mainVerticalLayout.add(*takeoverWidget);
             takeoverWidget->show();
         }
@@ -114,12 +114,12 @@ int main(int argc, char *argv[])
     mainVerticalLayout.add(prompt);
     prompt.show();
     prompt.grab_focus(); // Focus the entry field on startup
-    prompt.signal_activate().connect([&app, &finder, &mainVerticalLayout, &options]()
+    prompt.signal_activate().connect([&app, &finder, &mainVerticalLayout, &optionsScroll]()
                                      {
-                                        if (!finder.getMatches().empty() && options.is_visible()) {
-                                         handleRunResult(finder.RunMatch(), app, mainVerticalLayout, options, finder.getMatches()[0]->getWidget());
+                                        if (!finder.getMatches().empty() && optionsScroll.is_visible()) {
+                                         handleRunResult(finder.RunMatch(), app, mainVerticalLayout, optionsScroll, finder.getMatches()[0]->getWidget());
                                         } });
-    prompt.signal_changed().connect([&prompt, &options, &finder, &app, &mainVerticalLayout]()
+    prompt.signal_changed().connect([&prompt, &options, &finder, &app, &mainVerticalLayout, &optionsScroll]()
                                     { 
                                         if (!options.is_visible())
                                         {
@@ -140,9 +140,9 @@ int main(int argc, char *argv[])
                                                 break;
                                             }
                                             Gtk::Button *button = Gtk::manage(new Gtk::Button(match->getDisplay()));
-                                            button->signal_clicked().connect([match, &app, &options, &mainVerticalLayout]()
+                                            button->signal_clicked().connect([match, &app, &optionsScroll, &mainVerticalLayout]()
                                                                              {
-                                                                                    handleRunResult(match->run(), app, mainVerticalLayout, options, match->getWidget());
+                                                                                    handleRunResult(match->run(), app, mainVerticalLayout, optionsScroll, match->getWidget());
                                                                              });
                                             options.add(*button);
                                             button->show();
