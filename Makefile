@@ -41,6 +41,11 @@ $(TARGET): $(OBJECTS)
 clean:
 	rm -f $(OBJECTS) $(TARGET) $(GCH_LIST)
 
-.PHONY: debug
+# Install target for use with Nix
+install: $(TARGET)
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/launcher
+
+.PHONY: debug clean install
 debug: CXXFLAGS += -g -O0
 debug: clean all
