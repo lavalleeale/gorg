@@ -42,6 +42,10 @@ size_t ChatMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *user
         {
             auto j = json::parse(line);
             // Extract the new content delta
+            if (!j.contains("choices") || j["choices"].empty() || !j["choices"][0].contains("delta") || !j["choices"][0]["delta"].contains("content"))
+            {
+                continue;
+            }
             std::string content = j["choices"][0]["delta"]["content"];
             if (self->responseText == "Thinking...")
             {
@@ -87,9 +91,11 @@ RunResult ChatMatch::run()
     };
 
     std::string requestData = requestPayload.dump();
+    std::string authHeader = "Authorization: Bearer " + pluginSettings.value("apiKey", "");
 
     struct curl_slist *headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, authHeader.c_str());
 
     // Replace the synchronous call with a background thread:
     std::thread backgroundThread([this, curl, headers, requestData, url]()
