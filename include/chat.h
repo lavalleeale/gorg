@@ -1,6 +1,7 @@
 #ifndef __chat_h__
 #define __chat_h__
 #include "plugin.h"
+#include <nlohmann/json.hpp>
 #include "match.h"
 #include <gtkmm/label.h>
 #include <glibmm/dispatcher.h>
