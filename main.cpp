@@ -1,9 +1,10 @@
-#include "TransparentWindow.h"
+#include <TransparentWindow.h>
 #include <gtkmm.h>
 #include <gtkmm/application.h>
 #include <iostream>
-#include "plugins/plugin.h"
-#include "finder.h"
+#include <plugin.h>
+#include <finder.h>
+#include <settings.h>
 
 void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::Box &mainVerticalLayout, Gtk::Box &options, Gtk::Widget *takeoverWidget = nullptr)
 {
@@ -27,13 +28,14 @@ void handleRunResult(RunResult result, Glib::RefPtr<Gtk::Application> app, Gtk::
 
 int main(int argc, char *argv[])
 {
-    auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
+    auto app = Gtk::Application::create(argc, argv, "one.lavallee.gorg");
+    Settings::getInstance().load();
     Finder finder;
 
     TransparentWindow window;
     auto action_group = Gio::SimpleActionGroup::create();
-    int width = 600, height = 200;
-    window.set_default_size(width, height);
+    window.set_default_size(Settings::getInstance().getWindowWidth(),
+                            Settings::getInstance().getWindowHeight());
     window.set_title("GTKmm Example");
     window.set_decorated(false);
     window.set_position(Gtk::WIN_POS_CENTER);
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
 
     // Set CSS provider for styling
     auto css_provider = Gtk::CssProvider::create();
-    css_provider->load_from_data(R"(
+    const std::string defaultCss = R"(
         button {
             color: white;
             background-color: rgba(40, 40, 80, 0.2);
@@ -78,7 +80,24 @@ int main(int argc, char *argv[])
             padding: 5px;
             margin: 10px;
         }
-    )");
+    )";
+    css_provider->load_from_data(defaultCss);
+
+    // Load custom CSS if it exists
+    auto custom_css_provider = Gtk::CssProvider::create();
+    try
+    {
+        custom_css_provider->load_from_data(Settings::getInstance().getCustomCss());
+        Gtk::StyleContext::add_provider_for_screen(
+            Gdk::Screen::get_default(),
+            custom_css_provider,
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
+    catch (const Glib::Error &ex)
+    {
+        std::cerr << "Failed to load custom CSS: " << ex.what() << std::endl;
+    }
+
     Gtk::StyleContext::add_provider_for_screen(
         Gdk::Screen::get_default(),
         css_provider,
@@ -116,7 +135,7 @@ int main(int argc, char *argv[])
                                         unsigned int i = 0;
                                         for (auto match : finder.getMatches())
                                         {
-                                            if (++i > 25)
+                                            if (++i > Settings::getInstance().getMaxResults())
                                             {
                                                 break;
                                             }

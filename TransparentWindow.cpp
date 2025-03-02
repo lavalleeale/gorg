@@ -1,4 +1,4 @@
-#include "TransparentWindow.h"
+#include <TransparentWindow.h>
 #include <iostream>
 #include <gtk/gtk.h>
 

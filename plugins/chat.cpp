@@ -2,8 +2,9 @@
 #include <string>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
-#include "chat.h"
+#include <chat.h>
 #include <thread>
+#include <settings.h>
 
 using json = nlohmann::json;
 
@@ -75,9 +76,10 @@ RunResult ChatMatch::run()
     // OpenAI API URL for chat completions
     const std::string url = "http://localhost:11434/v1/chat/completions";
 
+    auto pluginSettings = Settings::getInstance().getPluginSettings("ai");
     // Construct your JSON request payload
     json requestPayload = {
-        {"model", "llama3.2:1b"},
+        {"model", pluginSettings.value("model", "llama3.2:1b")},
         {"stream", true},
         {"messages",
          {

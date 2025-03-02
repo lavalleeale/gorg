@@ -1,8 +1,8 @@
-#include "finder.h"
-#include "plugins/drun.h"
-#include "plugins/equation.h"
-#include "plugins/chat.h"
-#include "plugins/run.h"
+#include <finder.h>
+#include <drun.h>
+#include <equation.h>
+#include <chat.h>
+#include <run.h>
 
 Finder::Finder()
 {

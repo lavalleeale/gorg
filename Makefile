@@ -1,10 +1,6 @@
 # Compiler
 CXX = g++
 
-# Precompiled headers (add as many as needed)
-PCH_LIST = include/exprtk.hpp include/nlohmann/json.hpp
-GCH_LIST = $(PCH_LIST:=.gch)
-
 # Use pkg-config to get necessary flags for gtkmm-3.0 and libcurl
 PKG_CFLAGS = $(shell pkg-config gtkmm-3.0 libcurl --cflags)
 PKG_LIBS   = $(shell pkg-config gtkmm-3.0 libcurl --libs)
@@ -23,11 +19,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = gorg.out 
 
 # Default target
-all: $(GCH_LIST) $(TARGET)
-
-# Pattern rule for building precompiled headers
-%.gch: %
-	$(CXX) $(CXXFLAGS) -x c++-header $< -o $@
+all: $(TARGET)
 
 # Link the object files to create the executable
 $(TARGET): $(OBJECTS)
@@ -35,11 +27,11 @@ $(TARGET): $(OBJECTS)
 
 # Compile each source file into an object file; depend on all precompiled headers
 %.o: %.cpp $(GCH_LIST)
-	$(CXX) $(CXXFLAGS) $(foreach pch,$(PCH_LIST),-include $(pch)) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean up generated files
 clean:
-	rm -f $(OBJECTS) $(TARGET) $(GCH_LIST)
+	rm -f $(OBJECTS) $(TARGET)
 
 # Install target for use with Nix
 install: $(TARGET)
