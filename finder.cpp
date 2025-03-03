@@ -3,6 +3,7 @@
 #include <equation.h>
 #include <chat.h>
 #include <run.h>
+#include <web.h>
 
 Finder::Finder()
 {
@@ -10,6 +11,7 @@ Finder::Finder()
     plugins.push_back(new Equation());
     plugins.push_back(new Chat());
     plugins.push_back(new Run());
+    plugins.push_back(new Web());
 }
 
 Finder::~Finder()

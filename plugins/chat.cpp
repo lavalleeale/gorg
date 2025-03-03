@@ -146,5 +146,9 @@ std::string ChatMatch::getDisplay()
 
 double ChatMatch::getRelevance(std::string input)
 {
+    if (input.empty())
+    {
+        return 0;
+    }
     return pluginSettings.value("relevanceScore", 0.75);
 }
