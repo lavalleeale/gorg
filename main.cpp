@@ -83,6 +83,11 @@ int main(int argc, char *argv[])
     )";
     css_provider->load_from_data(defaultCss);
 
+    Gtk::StyleContext::add_provider_for_screen(
+        Gdk::Screen::get_default(),
+        css_provider,
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
     // Load custom CSS if it exists
     auto custom_css_provider = Gtk::CssProvider::create();
     try
@@ -97,11 +102,6 @@ int main(int argc, char *argv[])
     {
         std::cerr << "Failed to load custom CSS: " << ex.what() << std::endl;
     }
-
-    Gtk::StyleContext::add_provider_for_screen(
-        Gdk::Screen::get_default(),
-        css_provider,
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     Gtk::VBox mainVerticalLayout;
     Gtk::Entry prompt;

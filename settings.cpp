@@ -21,11 +21,23 @@ void Settings::loadFromDir(const std::string &directory)
 
         nlohmann::json j;
         file >> j;
+        file.close();
 
         windowWidth = j.value("windowWidth", 600);
         windowHeight = j.value("windowHeight", 200);
         maxResults = j.value("maxResults", 25);
         pluginSettings = j.value("plugins", nlohmann::json::object());
+        std::ifstream customCssFile(directory + "/style.css");
+        if (customCssFile.is_open())
+        {
+            customCssFile.seekg(0, std::ios::end);
+            customCss.reserve(customCssFile.tellg());
+            customCssFile.seekg(0, std::ios::beg);
+
+            customCss.assign((std::istreambuf_iterator<char>(customCssFile)),
+                             std::istreambuf_iterator<char>());
+            customCssFile.close();
+        }
     }
     catch (const std::exception &e)
     {
