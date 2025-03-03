@@ -93,7 +93,6 @@ class interface:
 ```cpp
 class MyPlugin : public Plugin {
 public:
-    float matchChance(std::string input);
     std::vector<Match *> getMatches(std::string input);
     ~MyPlugin() {};
 };

@@ -3,15 +3,6 @@
 #include <fstream>
 #include <iostream>
 
-float Run::matchChance(std::string input)
-{
-    if (input.empty())
-    {
-        return 0;
-    }
-    return 0.75;
-}
-
 std::vector<Match *> Run::getMatches(std::string input)
 {
     char *data_env = std::getenv("XDG_DATA_DIRS");
@@ -116,5 +107,5 @@ RunResult RunMatch::run()
 
 double RunMatch::getRelevance(std::string input)
 {
-    return fuzzyMatchScore(input, name);
+    return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, name);
 }

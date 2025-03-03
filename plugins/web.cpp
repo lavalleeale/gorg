@@ -53,5 +53,5 @@ double WebMatch::getRelevance(std::string input)
     {
         return 0;
     }
-    return pluginSettings.value("relevanceScore", 0.75);
+    return pluginSettings.value("relevanceScore", 0.5);
 }

@@ -6,7 +6,6 @@
 class Plugin
 {
 public:
-    virtual float matchChance(std::string input) { return 1; };
     virtual std::vector<Match *> getMatches(std::string input) { return {}; };
     virtual ~Plugin() {};
 };

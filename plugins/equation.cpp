@@ -26,11 +26,6 @@ std::string trim(std::string str)
     return ltrim(rtrim(str));
 }
 
-float Equation::matchChance(std::string input)
-{
-    return parser.compile(input, expression) ? 1 : 0;
-}
-
 std::vector<Match *> Equation::getMatches(std::string input)
 {
     if (parser.compile(input, expression))
@@ -59,5 +54,5 @@ std::string EquationMatch::getDisplay()
 
 double EquationMatch::getRelevance(std::string input)
 {
-    return 1.0;
+    return pluginSettings.value("relevanceScore", 1);
 }

@@ -12,15 +12,6 @@
 
 #define PATH_SEPARATOR ":"
 
-float Drun::matchChance(std::string input)
-{
-    if (input.empty())
-    {
-        return 0;
-    }
-    return 0.5;
-}
-
 std::vector<Match *> Drun::getMatches(std::string input)
 {
     std::vector<Match *> binaries;
@@ -88,5 +79,5 @@ RunResult DrunMatch::run()
 
 double DrunMatch::getRelevance(std::string input)
 {
-    return 0.5 * fuzzyMatchScore(input, path.filename().string());
+    return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, path.filename().string());
 }

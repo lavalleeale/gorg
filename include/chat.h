@@ -26,7 +26,6 @@ private:
 class Chat : public Plugin
 {
 public:
-    float matchChance(std::string input) { return 0.25; };
     std::vector<Match *> getMatches(std::string input) { return {new ChatMatch(input)}; };
     ~Chat() {};
 

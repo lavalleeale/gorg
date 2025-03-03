@@ -4,10 +4,12 @@
 #include "match.h"
 #include <exprtk.hpp>
 #include <gtkmm/widget.h>
+#include <nlohmann/json.hpp>
+#include <settings.h>
 class EquationMatch : public Match
 {
 public:
-    EquationMatch(std::string input, float result) : input(input), result(result) {};
+    EquationMatch(std::string input, float result) : input(input), result(result), pluginSettings(Settings::getInstance().getPluginSettings("equation")) {};
     std::string getDisplay();
     RunResult run() { return CONTINUE; };
     double getRelevance(std::string input);
@@ -17,11 +19,11 @@ public:
 private:
     std::string input;
     float result;
+    nlohmann::json pluginSettings;
 };
 class Equation : public Plugin
 {
 public:
-    float matchChance(std::string input);
     std::vector<Match *> getMatches(std::string input);
     ~Equation() {};
 
