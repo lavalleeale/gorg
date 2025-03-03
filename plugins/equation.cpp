@@ -1,5 +1,6 @@
 #include "equation.h"
 #include <exprtk.hpp>
+#include <iomanip>
 
 float Equation::matchChance(std::string input)
 {
@@ -20,7 +21,10 @@ std::vector<Match *> Equation::getMatches(std::string input)
 
 std::string EquationMatch::getDisplay()
 {
-    return input + "=" + std::to_string(result);
+    std::ostringstream oss;
+    // Format with 6 decimal places, then trim unnecessary zeros.
+    oss << std::defaultfloat << std::setprecision(std::numeric_limits<float>::max_digits10) << result;
+    return input + "=" + oss.str();
 }
 
 double EquationMatch::getRelevance(std::string input)

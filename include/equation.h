@@ -26,7 +26,7 @@ public:
     ~Equation() {};
 
 private:
-    exprtk::parser<float> parser;
-    exprtk::expression<float> expression;
+    exprtk::parser<double> parser;
+    exprtk::expression<double> expression;
 };
 #endif
