@@ -45,7 +45,13 @@ void Finder::find(const std::string &query)
     for (auto plugin : plugins)
     {
         std::vector<Match *> pluginMatches = plugin->getMatches(query);
-        matches.insert(matches.end(), pluginMatches.begin(), pluginMatches.end());
+        for (auto match : pluginMatches)
+        {
+            if (match->getRelevance(query) >= 0.1)
+            {
+                matches.push_back(match);
+            }
+        }
     }
     std::sort(matches.begin(), matches.end(), [&query](Match *a, Match *b)
               { return a->getRelevance(query) > b->getRelevance(query); });
