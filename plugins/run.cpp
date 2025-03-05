@@ -107,5 +107,5 @@ RunResult RunMatch::run()
 
 double RunMatch::getRelevance(std::string input)
 {
-    return pluginSettings.value("relevanceScore", 0.7) * fuzzyMatchScore(input, name);
+    return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, name);
 }

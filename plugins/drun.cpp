@@ -79,5 +79,5 @@ RunResult DrunMatch::run()
 
 double DrunMatch::getRelevance(std::string input)
 {
-    return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, path.filename().string());
+    return pluginSettings.value("relevanceScore", 0.7) * fuzzyMatchScore(input, path.filename().string());
 }
