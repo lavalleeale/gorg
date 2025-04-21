@@ -28,6 +28,8 @@
           libsigcxx
           harfbuzz
           stdenv.cc.cc.lib # For libstdc++
+          meson
+          ninja
         ];
       in {
         packages = {
@@ -42,9 +44,17 @@
 
             buildInputs = dependencies;
 
+            configurePhase = ''
+              meson setup build
+            '';
+
+            buildPhase = ''
+              meson compile -C build
+            '';
+
             installPhase = ''
               mkdir -p $out/bin
-              cp gorg.out $out/bin/gorg
+              cp build/gorg $out/bin/
 
               # Wrap the executable with proper environment variables
               wrapProgram $out/bin/gorg \
