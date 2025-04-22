@@ -9,9 +9,9 @@
 // Local Headers
 #include <settings.h>
 
-static int windowWidth;
-static int windowHeight;
-static unsigned int maxResults;
+static int windowWidth = 600;
+static int windowHeight = 200;
+static unsigned int maxResults = 25;
 static std::string customCss;
 static nlohmann::json pluginSettings;
 static std::once_flag loaded;

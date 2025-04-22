@@ -86,9 +86,17 @@ void Gorg::search(const std::string &query)
         {
             break;
         }
-        Gtk::Button *button = Gtk::manage(new Gtk::Button(match->getDisplay()));
+        Gtk::Label *label = Gtk::manage(new Gtk::Label(match->getDisplay()));
+        label->set_line_wrap(true);
+        label->set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
+        label->set_ellipsize(Pango::EllipsizeMode::ELLIPSIZE_END);
+        label->set_max_width_chars(40);
+        label->set_size_request(50, -1);
+        Gtk::Button *button = Gtk::manage(new Gtk::Button());
         button->signal_clicked().connect([match, this]()
                                          { handleRunResult(match); });
+        button->add(*label);
+        label->show();
         options.add(*button);
         button->show();
     }
