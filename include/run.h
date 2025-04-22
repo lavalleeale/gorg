@@ -9,22 +9,21 @@
 class RunMatch : public Match
 {
 public:
-    RunMatch(std::string exec, std::string name) : exec(exec), name(name), pluginSettings(getPluginSettings("run")) {};
-    std::string getDisplay();
-    RunResult run();
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return nullptr; };
-    ~RunMatch() {};
+    RunMatch(const std::string &exec, const std::string &name) : exec(exec), name(name) {};
+    std::string getDisplay() const override;
+    RunResult run() override;
+    double getRelevance(const std::string &input) const override;
+    ~RunMatch() override {};
 
 private:
     std::string exec;
     std::string name;
-    nlohmann::json pluginSettings;
+    nlohmann::json pluginSettings = getPluginSettings("run");
 };
 class Run : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input);
-    ~Run() {};
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Run() override {};
 };
 #endif

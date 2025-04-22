@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "Mac",
+      "name": "Linux",
       "includePath": [
         "${workspaceFolder}/**",
         "/nix/store/c9dcrdl6s1l4q8iwq21braln1cj3y07h-gtkmm-3.24.9-dev/include/gtkmm-3.0",
@@ -37,10 +37,10 @@
         "/nix/store/b09crwvrqdz6qynhjjz78db27vkzap5v-freetype-2.13.3-dev/include/freetype2"
       ],
       "defines": [],
-      "compilerPath": "/usr/bin/clang",
+      "compilerPath": "/run/current-system/sw/bin/g++",
       "cStandard": "c17",
       "cppStandard": "c++17",
-      "intelliSenseMode": "macos-clang-arm64"
+      "intelliSenseMode": "linux-gcc-x64"
     }
   ],
   "version": 4

@@ -31,12 +31,12 @@ Dmenu::Dmenu()
     }
 }
 
-double DmenuMatch::getRelevance(std::string input)
+double DmenuMatch::getRelevance(const std::string &) const
 {
     return pluginSettings.value("relevanceScore", 0.5) * relevance;
 }
 
-std::string DmenuMatch::getDisplay()
+std::string DmenuMatch::getDisplay() const
 {
     return value;
 }
@@ -47,7 +47,7 @@ RunResult DmenuMatch::run()
     return RunResult::CLOSE;
 }
 
-std::vector<Match *> Dmenu::getMatches(std::string input)
+std::vector<Match *> Dmenu::getMatches(const std::string &input) const
 {
     std::vector<Match *> matches;
     for (size_t i = 0; i < options.size(); i++)

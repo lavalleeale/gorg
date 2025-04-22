@@ -12,7 +12,7 @@
 
 #define PATH_SEPARATOR ":"
 
-std::vector<Match *> Drun::getMatches(std::string input)
+std::vector<Match *> Drun::getMatches(const std::string &input) const
 {
     std::vector<Match *> binaries;
     char *path_env = std::getenv("PATH");
@@ -53,7 +53,7 @@ std::vector<Match *> Drun::getMatches(std::string input)
     return binaries;
 }
 
-std::string DrunMatch::getDisplay()
+std::string DrunMatch::getDisplay() const
 {
     return path.filename().string();
 }
@@ -77,7 +77,7 @@ RunResult DrunMatch::run()
     return CLOSE;
 }
 
-double DrunMatch::getRelevance(std::string input)
+double DrunMatch::getRelevance(const std::string &input) const
 {
     return pluginSettings.value("relevanceScore", 0.7) * fuzzyMatchScore(input, path.filename().string());
 }

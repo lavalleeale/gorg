@@ -26,8 +26,10 @@ std::string trim(std::string str)
     return ltrim(rtrim(str));
 }
 
-std::vector<Match *> Equation::getMatches(std::string input)
+std::vector<Match *> Equation::getMatches(const std::string &input) const
 {
+    exprtk::parser<double> parser;
+    exprtk::expression<double> expression;
     if (parser.compile(input, expression))
     {
         return {new EquationMatch(input, expression.value())};
@@ -38,7 +40,7 @@ std::vector<Match *> Equation::getMatches(std::string input)
     }
 }
 
-std::string EquationMatch::getDisplay()
+std::string EquationMatch::getDisplay() const
 {
     std::ostringstream oss;
     // Format with 6 decimal places, then trim unnecessary zeros.
@@ -52,7 +54,7 @@ std::string EquationMatch::getDisplay()
     return lhs.substr(lhs.find_last_of(';') + 1) + " = " + oss.str();
 }
 
-double EquationMatch::getRelevance(std::string input)
+double EquationMatch::getRelevance(const std::string &) const
 {
     return pluginSettings.value("relevanceScore", 1);
 }

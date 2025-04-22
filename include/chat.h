@@ -8,12 +8,12 @@
 class ChatMatch : public Match
 {
 public:
-    ChatMatch(std::string input);
-    std::string getDisplay();
-    RunResult run();
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return &label; };
-    ~ChatMatch() {};
+    ChatMatch(const std::string &input);
+    std::string getDisplay() const override;
+    RunResult run() override;
+    double getRelevance(const std::string &input) const override;
+    Gtk::Widget *getWidget() override { return &label; };
+    ~ChatMatch() override {};
 
 private:
     nlohmann::json pluginSettings;
@@ -26,8 +26,8 @@ private:
 class Chat : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input);
-    ~Chat() {};
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Chat() override {};
 
 private:
 };

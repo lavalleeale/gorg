@@ -1,4 +1,5 @@
 #include "web.h"
+#include <iostream>
 
 std::string url_encode(const std::string &value)
 {
@@ -21,7 +22,7 @@ std::string url_encode(const std::string &value)
     return escaped.str();
 }
 
-std::string WebMatch::getDisplay()
+std::string WebMatch::getDisplay() const
 {
     return "Search the web for: " + input;
 }
@@ -36,7 +37,10 @@ RunResult WebMatch::run()
         // Execute the command using the shell
         std::string query = pluginSettings.value("searchUrl", "https://www.google.com/search?q=") + url_encode(input);
         std::string command = "xdg-open \"" + query + "\"";
-        std::system(command.c_str());
+        if (std::system(command.c_str()))
+        {
+            std::cerr << "Failed to execute command: " << command << std::endl;
+        }
         _exit(127); // Exit child if execl fails
     }
     else if (pid < 0) // Fork failed
@@ -47,7 +51,7 @@ RunResult WebMatch::run()
     return CLOSE;
 }
 
-double WebMatch::getRelevance(std::string input)
+double WebMatch::getRelevance(const std::string &input) const
 {
     if (input.empty())
     {
@@ -56,7 +60,7 @@ double WebMatch::getRelevance(std::string input)
     return pluginSettings.value("relevanceScore", 0.5);
 }
 
-std::vector<Match *> Web::getMatches(std::string input)
+std::vector<Match *> Web::getMatches(const std::string &input) const
 {
     if (input.empty())
     {

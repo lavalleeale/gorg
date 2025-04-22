@@ -5,7 +5,7 @@
 
 static int windowWidth;
 static int windowHeight;
-static int maxResults;
+static unsigned int maxResults;
 static std::string customCss;
 static nlohmann::json pluginSettings;
 static std::once_flag loaded;
@@ -91,7 +91,7 @@ int getWindowHeight()
     return windowHeight;
 }
 
-int getMaxResults()
+unsigned int getMaxResults()
 {
     std::call_once(loaded, []()
                    { load(); });

@@ -9,12 +9,11 @@
 class DrunMatch : public Match
 {
 public:
-    DrunMatch(std::filesystem::path path) : path(path), pluginSettings(getPluginSettings("drun")) {};
-    std::string getDisplay();
-    RunResult run();
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return nullptr; };
-    ~DrunMatch() {};
+    DrunMatch(const std::filesystem::path &path) : path(path), pluginSettings(getPluginSettings("drun")) {};
+    std::string getDisplay() const override;
+    RunResult run() override;
+    double getRelevance(const std::string &input) const override;
+    ~DrunMatch() override {};
 
 private:
     std::filesystem::path path;
@@ -23,7 +22,7 @@ private:
 class Drun : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input);
-    ~Drun() {};
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Drun() override {};
 };
 #endif

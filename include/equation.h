@@ -9,26 +9,21 @@
 class EquationMatch : public Match
 {
 public:
-    EquationMatch(std::string input, float result) : input(input), result(result), pluginSettings(getPluginSettings("equation")) {};
-    std::string getDisplay();
-    RunResult run() { return CONTINUE; };
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return nullptr; };
-    ~EquationMatch() {};
+    EquationMatch(const std::string &input, float result) : input(input), result(result) {};
+    std::string getDisplay() const override;
+    RunResult run() override { return CONTINUE; };
+    double getRelevance(const std::string &input) const override;
+    ~EquationMatch() override {};
 
 private:
     std::string input;
     float result;
-    nlohmann::json pluginSettings;
+    nlohmann::json pluginSettings = getPluginSettings("equation");
 };
 class Equation : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input);
-    ~Equation() {};
-
-private:
-    exprtk::parser<double> parser;
-    exprtk::expression<double> expression;
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Equation() override {};
 };
 #endif

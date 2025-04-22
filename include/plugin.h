@@ -6,7 +6,7 @@
 class Plugin
 {
 public:
-    virtual std::vector<Match *> getMatches(std::string input) { return {}; };
+    virtual std::vector<Match *> getMatches(const std::string &) const { return {}; };
     virtual ~Plugin() {};
 };
 #endif

@@ -8,24 +8,23 @@
 class DmenuMatch : public Match
 {
 public:
-    DmenuMatch(std::string value, double relevance) : value(value), pluginSettings(getPluginSettings("dmenu")), relevance(relevance) {};
-    std::string getDisplay();
-    RunResult run();
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return nullptr; };
-    ~DmenuMatch() {};
+    DmenuMatch(const std::string &value, double relevance) : value(value), relevance(relevance) {};
+    std::string getDisplay() const override;
+    RunResult run() override;
+    double getRelevance(const std::string &input) const override;
+    ~DmenuMatch() override {};
 
 private:
     std::string value;
-    nlohmann::json pluginSettings;
+    nlohmann::json pluginSettings = getPluginSettings("dmenu");
     double relevance;
 };
 class Dmenu : public Plugin
 {
 public:
     Dmenu();
-    std::vector<Match *> getMatches(std::string input);
-    ~Dmenu() {};
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Dmenu() override {};
 
 private:
     std::vector<std::string> options;

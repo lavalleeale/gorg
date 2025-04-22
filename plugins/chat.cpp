@@ -121,7 +121,7 @@ RunResult ChatMatch::run()
     return TAKEOVER;
 }
 
-ChatMatch::ChatMatch(std::string input)
+ChatMatch::ChatMatch(const std::string &input)
 {
     this->input = input;
     this->responseText = "";
@@ -139,12 +139,12 @@ ChatMatch::ChatMatch(std::string input)
                                 { label.set_text(this->responseText); });
 }
 
-std::string ChatMatch::getDisplay()
+std::string ChatMatch::getDisplay() const
 {
     return "Ask ChatGPT: " + input;
 }
 
-double ChatMatch::getRelevance(std::string input)
+double ChatMatch::getRelevance(const std::string &input) const
 {
     if (input.empty())
     {
@@ -153,7 +153,7 @@ double ChatMatch::getRelevance(std::string input)
     return pluginSettings.value("relevanceScore", 0.5);
 }
 
-std::vector<Match *> Chat::getMatches(std::string input)
+std::vector<Match *> Chat::getMatches(const std::string &input) const
 {
     if (input.empty())
     {

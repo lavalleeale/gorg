@@ -9,22 +9,21 @@
 class WebMatch : public Match
 {
 public:
-    WebMatch(std::string input) : input(input), pluginSettings(getPluginSettings("web")) {};
-    std::string getDisplay();
-    RunResult run();
-    double getRelevance(std::string input);
-    Gtk::Widget *getWidget() { return nullptr; };
-    ~WebMatch() {};
+    WebMatch(const std::string &input) : input(input) {};
+    std::string getDisplay() const override;
+    RunResult run() override;
+    double getRelevance(const std::string &input) const override;
+    ~WebMatch() override {};
 
 private:
-    nlohmann::json pluginSettings;
     std::string input;
+    nlohmann::json pluginSettings = getPluginSettings("web");
 };
 class Web : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input);
-    ~Web() {};
+    std::vector<Match *> getMatches(const std::string &input) const override;
+    ~Web() override {};
 
 private:
 };

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-std::vector<Match *> Run::getMatches(std::string input)
+std::vector<Match *> Run::getMatches(const std::string &input) const
 {
     char *data_env = std::getenv("XDG_DATA_DIRS");
     if (data_env == nullptr)
@@ -69,7 +69,7 @@ std::vector<Match *> Run::getMatches(std::string input)
     return binaries;
 }
 
-std::string RunMatch::getDisplay()
+std::string RunMatch::getDisplay() const
 {
     return name;
 }
@@ -105,7 +105,7 @@ RunResult RunMatch::run()
     return CLOSE;
 }
 
-double RunMatch::getRelevance(std::string input)
+double RunMatch::getRelevance(const std::string &input) const
 {
     return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, name);
 }

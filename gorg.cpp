@@ -72,8 +72,7 @@ void Gorg::search(const std::string &query)
     {
         options.remove(*child);
     }
-    std::string text = prompt.get_text();
-    finder->find(text);
+    finder->find(query);
     unsigned int i = 0;
     for (auto match : finder->getMatches())
     {
@@ -219,7 +218,7 @@ void Gorg::setupKeybindings()
 {
     auto quitAction = Gio::SimpleAction::create("quit");
     action_group->add_action(quitAction);
-    quitAction->signal_activate().connect([this](const Glib::VariantBase t)
+    quitAction->signal_activate().connect([this](const Glib::VariantBase)
                                           { app->quit(); });
     app->set_accel_for_action("app.quit", "Escape");
 }
