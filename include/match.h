@@ -1,7 +1,11 @@
-#include <string>
-#include <gtkmm/widget.h>
 #ifndef __match_h__
 #define __match_h__
+
+// C++ Standard Library
+#include <string>
+
+// GTK/GLib Libraries
+#include <gtkmm/widget.h>
 
 enum RunResult
 {

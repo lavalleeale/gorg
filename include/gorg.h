@@ -1,12 +1,18 @@
 #ifndef __gorg_h__
 #define __gorg_h__
 
-#include <vector>
+// C++ Standard Library
 #include <string>
-#include <gtkmm.h>
-#include <settings.h>
-#include <finder.h>
+
+// GTK/GLib Libraries
+#include <giomm/simpleactiongroup.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/hvbox.h>
+#include <gtkmm/scrolledwindow.h>
+
+// Local Headers
 #include <TransparentWindow.h>
+#include <finder.h>
 
 class Gorg
 {

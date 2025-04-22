@@ -1,11 +1,15 @@
 #ifndef __equation_h__
 #define __equation_h__
-#include "plugin.h"
-#include "match.h"
+
+// External Libraries
 #include <exprtk.hpp>
-#include <gtkmm/widget.h>
 #include <nlohmann/json.hpp>
+
+// Local Headers
+#include <match.h>
+#include <plugin.h>
 #include <settings.h>
+
 class EquationMatch : public Match
 {
 public:

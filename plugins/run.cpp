@@ -1,7 +1,10 @@
-#include "run.h"
-#include <stringMatch.h>
+// C++ Standard Library
 #include <fstream>
 #include <iostream>
+
+// Project Headers
+#include <run.h>
+#include <stringMatch.h>
 
 std::vector<Match *> Run::getMatches(const std::string &input) const
 {

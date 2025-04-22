@@ -1,4 +1,5 @@
-#include "gorg.h"
+// Local Headers
+#include <gorg.h>
 
 int main(int argc, char *argv[])
 {

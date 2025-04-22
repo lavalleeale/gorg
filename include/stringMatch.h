@@ -1,9 +1,5 @@
 #ifndef __stringmatch_h__
 #define __stringmatch_h__
-#include <string>
-#include <cctype>
-#include <algorithm>
-#include <cmath>
 
 #define START_BONUS 10
 #define CONSECUTIVE_BONUS 10

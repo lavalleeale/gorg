@@ -1,10 +1,11 @@
+// Local Headers
 #include <finder.h>
+#include <chat.h>
+#include <dmenu.h>
 #include <drun.h>
 #include <equation.h>
-#include <chat.h>
 #include <run.h>
 #include <web.h>
-#include <dmenu.h>
 
 Finder::Finder()
 {

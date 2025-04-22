@@ -1,9 +1,13 @@
+// C++ Standard Library
 #include <iostream>
-#include <string>
+#include <thread>
+
+// External Libraries
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
+
+// Local Headers
 #include <chat.h>
-#include <thread>
 #include <settings.h>
 
 using json = nlohmann::json;

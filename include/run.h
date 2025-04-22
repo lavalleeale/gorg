@@ -1,11 +1,14 @@
 #ifndef __run_h__
 #define __run_h__
-#include "plugin.h"
-#include "match.h"
-#include <filesystem>
-#include <gtkmm/widget.h>
+
+// External Libraries
 #include <nlohmann/json.hpp>
+
+// Local Headers
+#include <match.h>
+#include <plugin.h>
 #include <settings.h>
+
 class RunMatch : public Match
 {
 public:

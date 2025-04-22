@@ -1,11 +1,14 @@
 #ifndef __web_h__
 #define __web_h__
-#include "plugin.h"
+
+// External Libraries
 #include <nlohmann/json.hpp>
-#include "match.h"
-#include <gtkmm/label.h>
-#include <glibmm/dispatcher.h>
+
+// Local Headers
+#include <match.h>
+#include <plugin.h>
 #include <settings.h>
+
 class WebMatch : public Match
 {
 public:

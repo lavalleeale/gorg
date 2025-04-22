@@ -1,9 +1,13 @@
 #ifndef __dmenu_h__
 #define __dmenu_h__
-#include "plugin.h"
-#include "match.h"
+
+// Third Party Libraries
 #include <nlohmann/json.hpp>
-#include "settings.h"
+
+// Local Headers
+#include <plugin.h>
+#include <match.h>
+#include <settings.h>
 
 class DmenuMatch : public Match
 {

@@ -1,10 +1,8 @@
 #ifndef __transparent_window_h__
 #define __transparent_window_h__
-#include <gtkmm/application.h>
+
+// GTK/GLib Libraries
 #include <gtkmm/window.h>
-#include <cairomm/context.h>
-#include <gdkmm/screen.h>
-#include <gdkmm/visual.h>
 
 class TransparentWindow : public Gtk::Window
 {

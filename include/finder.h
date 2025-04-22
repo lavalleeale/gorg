@@ -1,8 +1,13 @@
 #ifndef __finder_h__
 #define __finder_h__
+
+// C++ Standard Library
 #include <vector>
-#include <plugin.h>
+
+// Local Headers
 #include <match.h>
+#include <plugin.h>
+
 class Finder
 {
 public:

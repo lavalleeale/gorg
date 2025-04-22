@@ -1,10 +1,14 @@
 #ifndef __chat_h__
 #define __chat_h__
-#include "plugin.h"
-#include <nlohmann/json.hpp>
-#include "match.h"
-#include <gtkmm/label.h>
+
+// GTK/GLib Libraries
 #include <glibmm/dispatcher.h>
+#include <gtkmm/label.h>
+
+// Local Headers
+#include <match.h>
+#include <plugin.h>
+
 class ChatMatch : public Match
 {
 public:

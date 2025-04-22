@@ -1,5 +1,8 @@
-#include "dmenu.h"
+// C++ Standard Library
 #include <iostream>
+
+// Project Headers
+#include <dmenu.h>
 #include <stringMatch.h>
 
 Dmenu::Dmenu()

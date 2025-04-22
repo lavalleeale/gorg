@@ -1,11 +1,17 @@
 #ifndef __drun_h__
 #define __drun_h__
-#include "plugin.h"
-#include "match.h"
+
+// C++ Standard Library
 #include <filesystem>
-#include <gtkmm/widget.h>
+
+// External Libraries
 #include <nlohmann/json.hpp>
+
+// Local Headers
+#include <match.h>
+#include <plugin.h>
 #include <settings.h>
+
 class DrunMatch : public Match
 {
 public:

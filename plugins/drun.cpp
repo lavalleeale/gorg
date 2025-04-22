@@ -1,14 +1,10 @@
-#include <iostream>
-#include <string>
+// C++ Standard Library
 #include <vector>
-#include <cstdlib>
-#include <filesystem>
-#include <map>
-#include <algorithm>
-#include "match.h"
-#include "drun.h"
+
+// Local Headers
+#include <drun.h>
+#include <match.h>
 #include <stringMatch.h>
-#include <unistd.h>
 
 #define PATH_SEPARATOR ":"
 

@@ -1,6 +1,8 @@
-#include <TransparentWindow.h>
+// C++ Standard Library
 #include <iostream>
-#include <gtk/gtk.h>
+
+// Local Headers
+#include <TransparentWindow.h>
 
 TransparentWindow::TransparentWindow() : m_isDragging(false),
                                          m_dragX(0),

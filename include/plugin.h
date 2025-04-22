@@ -1,8 +1,13 @@
 #ifndef __plugin_h__
 #define __plugin_h__
+
+// C++ Standard Library
 #include <string>
 #include <vector>
-#include "match.h"
+
+// Local Headers
+#include <match.h>
+
 class Plugin
 {
 public:

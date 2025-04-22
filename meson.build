@@ -33,4 +33,5 @@ executable('gorg',
   sources: src_files,
   include_directories: inc_dirs,
   dependencies: [gtkmm_dep, curl_dep],
+  cpp_pch: './pch/gorg_pch.h',
   install: true)

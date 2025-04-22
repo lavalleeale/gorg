@@ -1,12 +1,18 @@
-#include <gorg.h>
-#include <TransparentWindow.h>
-#include <gtkmm.h>
-#include <gtkmm/application.h>
+// C++ Standard Library
 #include <iostream>
-#include <plugin.h>
-#include <finder.h>
-#include <settings.h>
+
+// GTK/GLib Libraries
 #include <glibmm/optioncontext.h>
+#include <gtkmm/application.h>
+#include <gtkmm/button.h>
+#include <gtkmm/cssprovider.h>
+
+// Local Headers
+#include <TransparentWindow.h>
+#include <finder.h>
+#include <gorg.h>
+#include <plugin.h>
+#include <settings.h>
 
 void Gorg::handleRunResult(Match *match)
 {

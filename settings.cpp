@@ -1,7 +1,13 @@
-#include <settings.h>
+// C++ Standard Library
 #include <fstream>
 #include <iostream>
 #include <mutex>
+
+// Third Party Libraries
+#include <nlohmann/json.hpp>
+
+// Local Headers
+#include <settings.h>
 
 static int windowWidth;
 static int windowHeight;

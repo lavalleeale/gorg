@@ -1,6 +1,8 @@
-#include "equation.h"
+// External Libraries
 #include <exprtk.hpp>
-#include <iomanip>
+
+// Project Headers
+#include <equation.h>
 
 // Trim from the left
 std::string ltrim(std::string str)
