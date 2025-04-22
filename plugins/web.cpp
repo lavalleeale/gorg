@@ -55,3 +55,12 @@ double WebMatch::getRelevance(std::string input)
     }
     return pluginSettings.value("relevanceScore", 0.5);
 }
+
+std::vector<Match *> Web::getMatches(std::string input)
+{
+    if (input.empty())
+    {
+        return {};
+    }
+    return {new WebMatch(input)};
+}

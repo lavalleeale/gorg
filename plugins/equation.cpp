@@ -30,11 +30,11 @@ std::vector<Match *> Equation::getMatches(std::string input)
 {
     if (parser.compile(input, expression))
     {
-        return std::vector<Match *>({new EquationMatch(input, expression.value())});
+        return {new EquationMatch(input, expression.value())};
     }
     else
     {
-        return std::vector<Match *>();
+        return {};
     }
 }
 

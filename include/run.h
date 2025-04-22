@@ -9,7 +9,7 @@
 class RunMatch : public Match
 {
 public:
-    RunMatch(std::string exec, std::string name) : exec(exec), name(name), pluginSettings(Settings::getInstance().getPluginSettings("run")) {};
+    RunMatch(std::string exec, std::string name) : exec(exec), name(name), pluginSettings(getPluginSettings("run")) {};
     std::string getDisplay();
     RunResult run();
     double getRelevance(std::string input);

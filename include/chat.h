@@ -26,7 +26,7 @@ private:
 class Chat : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input) { return {new ChatMatch(input)}; };
+    std::vector<Match *> getMatches(std::string input);
     ~Chat() {};
 
 private:

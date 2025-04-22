@@ -4,6 +4,7 @@
 #include <chat.h>
 #include <run.h>
 #include <web.h>
+#include <dmenu.h>
 
 Finder::Finder()
 {
@@ -12,6 +13,40 @@ Finder::Finder()
     plugins.push_back(new Chat());
     plugins.push_back(new Run());
     plugins.push_back(new Web());
+}
+
+Finder::Finder(const std::vector<std::string> &modes)
+{
+    std::string lowercase;
+    for (const auto &mode : modes)
+    {
+        lowercase = mode;
+        std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
+        if (lowercase == "drun")
+        {
+            plugins.push_back(new Drun());
+        }
+        else if (lowercase == "equation")
+        {
+            plugins.push_back(new Equation());
+        }
+        else if (lowercase == "chat")
+        {
+            plugins.push_back(new Chat());
+        }
+        else if (lowercase == "run")
+        {
+            plugins.push_back(new Run());
+        }
+        else if (lowercase == "web")
+        {
+            plugins.push_back(new Web());
+        }
+        else if (lowercase == "dmenu")
+        {
+            plugins.push_back(new Dmenu());
+        }
+    }
 }
 
 Finder::~Finder()
@@ -44,14 +79,8 @@ void Finder::find(const std::string &query)
     matches.clear();
     for (auto plugin : plugins)
     {
-        std::vector<Match *> pluginMatches = plugin->getMatches(query);
-        for (auto match : pluginMatches)
-        {
-            if (match->getRelevance(query) >= 0.1)
-            {
-                matches.push_back(match);
-            }
-        }
+        auto pluginMatches = plugin->getMatches(query);
+        matches.insert(matches.end(), pluginMatches.begin(), pluginMatches.end());
     }
     std::sort(matches.begin(), matches.end(), [&query](Match *a, Match *b)
               { return a->getRelevance(query) > b->getRelevance(query); });

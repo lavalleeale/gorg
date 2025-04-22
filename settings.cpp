@@ -1,14 +1,16 @@
 #include <settings.h>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 
-Settings &Settings::getInstance()
-{
-    static Settings instance;
-    return instance;
-}
+static int windowWidth;
+static int windowHeight;
+static int maxResults;
+static std::string customCss;
+static nlohmann::json pluginSettings;
+static std::once_flag loaded;
 
-void Settings::loadFromDir(const std::string &directory)
+void loadFromDir(const std::string &directory)
 {
     try
     {
@@ -45,7 +47,7 @@ void Settings::loadFromDir(const std::string &directory)
     }
 }
 
-void Settings::load()
+void load()
 {
     char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
     if (xdgConfigHome)
@@ -66,9 +68,39 @@ void Settings::load()
     }
 }
 
-const nlohmann::json &Settings::getPluginSettings(const std::string &pluginName) const
+nlohmann::json getPluginSettings(const std::string &pluginName)
 {
+    std::call_once(loaded, []()
+                   { load(); });
     static const nlohmann::json empty = nlohmann::json::object();
     auto it = pluginSettings.find(pluginName);
     return it != pluginSettings.end() ? *it : empty;
+}
+
+int getWindowWidth()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return windowWidth;
+}
+
+int getWindowHeight()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return windowHeight;
+}
+
+int getMaxResults()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return maxResults;
+}
+
+std::string getCustomCss()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return customCss;
 }

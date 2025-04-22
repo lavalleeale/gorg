@@ -7,6 +7,7 @@ class Finder
 {
 public:
     Finder();
+    Finder(const std::vector<std::string> &modes);
     ~Finder();
     RunResult RunMatch();
     void find(const std::string &query);

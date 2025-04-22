@@ -126,7 +126,7 @@ ChatMatch::ChatMatch(std::string input)
     this->input = input;
     this->responseText = "";
 
-    pluginSettings = Settings::getInstance().getPluginSettings("ai");
+    pluginSettings = getPluginSettings("ai");
 
     // Make sure lines wrap properly
     label.set_line_wrap(true);
@@ -151,4 +151,13 @@ double ChatMatch::getRelevance(std::string input)
         return 0;
     }
     return pluginSettings.value("relevanceScore", 0.5);
+}
+
+std::vector<Match *> Chat::getMatches(std::string input)
+{
+    if (input.empty())
+    {
+        return {};
+    }
+    return {new ChatMatch(input)};
 }

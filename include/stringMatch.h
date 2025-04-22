@@ -68,4 +68,32 @@ inline double fuzzyMatchScore(const std::string &query, const std::string &candi
     normalized = std::clamp(normalized, 0.0, 1.0);
     return normalized;
 }
+
+inline bool hasAllChars(const std::string &query, const std::string &candidate)
+{
+    if (query.empty())
+    {
+        return true;
+    }
+    std::string lowerQuery = query;
+    std::string lowerCandidate = candidate;
+    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower);
+    std::transform(lowerCandidate.begin(), lowerCandidate.end(), lowerCandidate.begin(), ::tolower);
+
+    // Store the iterator to the first character of the candidate string
+    std::string::iterator candidateIndex = lowerCandidate.begin();
+    for (auto c : lowerQuery)
+    {
+        // Find the first occurrence of the character that has not been used yet
+        candidateIndex = std::find(candidateIndex, lowerCandidate.end(), c);
+        // If the character is not found, return false
+        if (candidateIndex == lowerCandidate.end())
+        {
+            return false;
+        }
+        // Move the iterator to the next character for the next iteration
+        candidateIndex++;
+    }
+    return true;
+}
 #endif

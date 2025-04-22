@@ -9,7 +9,7 @@
 class EquationMatch : public Match
 {
 public:
-    EquationMatch(std::string input, float result) : input(input), result(result), pluginSettings(Settings::getInstance().getPluginSettings("equation")) {};
+    EquationMatch(std::string input, float result) : input(input), result(result), pluginSettings(getPluginSettings("equation")) {};
     std::string getDisplay();
     RunResult run() { return CONTINUE; };
     double getRelevance(std::string input);

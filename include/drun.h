@@ -9,7 +9,7 @@
 class DrunMatch : public Match
 {
 public:
-    DrunMatch(std::filesystem::path path) : path(path), pluginSettings(Settings::getInstance().getPluginSettings("drun")) {};
+    DrunMatch(std::filesystem::path path) : path(path), pluginSettings(getPluginSettings("drun")) {};
     std::string getDisplay();
     RunResult run();
     double getRelevance(std::string input);

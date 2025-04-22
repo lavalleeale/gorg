@@ -36,7 +36,7 @@ std::vector<Match *> Drun::getMatches(std::string input)
         {
             try
             {
-                if (fuzzyMatchScore(input, entry.path().filename()) > 0)
+                if (hasAllChars(input, entry.path().filename().string()))
                 {
                     if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
                     {

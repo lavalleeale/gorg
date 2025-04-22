@@ -58,7 +58,7 @@ std::vector<Match *> Run::getMatches(std::string input)
                     }
                 }
                 file.close();
-                if (!name_line.empty())
+                if (!name_line.empty() && hasAllChars(input, name_line))
                 {
                     Match *match = new RunMatch(exec_line, name_line);
                     binaries.push_back(match);

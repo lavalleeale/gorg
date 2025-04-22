@@ -1,5 +1,5 @@
 project('gorg', 'cpp',
-  version : '0.1',
+  version : '0.2',
   default_options : [
     'cpp_std=c++17',
     'warning_level=3',
@@ -18,9 +18,11 @@ src_files = files(
     './plugins/equation.cpp',
     './plugins/run.cpp',
     './plugins/web.cpp',
+    './plugins/dmenu.cpp',
     './TransparentWindow.cpp',
     './settings.cpp',
     './finder.cpp',
+    './gorg.cpp',
 )
 
 # Include directories

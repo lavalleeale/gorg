@@ -9,7 +9,7 @@
 class WebMatch : public Match
 {
 public:
-    WebMatch(std::string input) : input(input), pluginSettings(Settings::getInstance().getPluginSettings("web")) {};
+    WebMatch(std::string input) : input(input), pluginSettings(getPluginSettings("web")) {};
     std::string getDisplay();
     RunResult run();
     double getRelevance(std::string input);
@@ -23,7 +23,7 @@ private:
 class Web : public Plugin
 {
 public:
-    std::vector<Match *> getMatches(std::string input) { return {new WebMatch(input)}; };
+    std::vector<Match *> getMatches(std::string input);
     ~Web() {};
 
 private:
