@@ -22,7 +22,7 @@ public:
     void setupWindow();
     void setupKeybindings();
     void setupActions();
-    void search(const std::string &query);
+    void search();
     int run();
 
 private:

@@ -43,6 +43,8 @@ Gorg::~Gorg()
     {
         delete finder;
     }
+    // Save the query to the configuration file
+    saveLastQuery(prompt.get_text());
 }
 
 int Gorg::run()
@@ -58,13 +60,13 @@ void Gorg::setupActions()
                                         handleRunResult(finder->getMatches().front());
                                         } });
     prompt.signal_changed().connect([this]()
-                                    {
-                                         std::string text = prompt.get_text();
-                                             search(text); });
+                                    { search(); });
 }
 
-void Gorg::search(const std::string &query)
+void Gorg::search()
 {
+    const std::string query = prompt.get_text();
+
     if (!options.is_visible())
     {
         options.show();
@@ -116,6 +118,13 @@ void Gorg::setupArguments(int argc, char *argv[])
     entry.set_description("List of modes to load");
     group.add_entry(entry, modes);
 
+    Glib::OptionEntry autoRestoreEntry;
+    bool autoRestoreFlag = false;
+    autoRestoreEntry.set_long_name("auto-restore");
+    autoRestoreEntry.set_short_name('a');
+    autoRestoreEntry.set_description("Enable or disable automatic query restoration (default: disabled)");
+    group.add_entry(autoRestoreEntry, autoRestoreFlag);
+
     option_context.set_main_group(group);
 
     try
@@ -139,6 +148,12 @@ void Gorg::setupArguments(int argc, char *argv[])
         }
     }
     finder = allModes.empty() ? new Finder() : new Finder(allModes);
+    if (autoRestoreFlag)
+    {
+        // Restore the last query on startup
+        std::string lastQuery = getLastQuery();
+        prompt.set_text(lastQuery);
+    }
 }
 
 void Gorg::setupWindow()

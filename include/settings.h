@@ -9,4 +9,7 @@ int getWindowHeight();
 unsigned int getMaxResults();
 std::string getCustomCss();
 nlohmann::json getPluginSettings(const std::string &pluginName);
+std::string getLastQuery();
+void saveLastQuery(const std::string &query);
+
 #endif

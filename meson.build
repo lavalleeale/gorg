@@ -1,5 +1,5 @@
 project('gorg', 'cpp',
-  version : '0.2',
+  version : '0.2.1',
   default_options : [
     'cpp_std=c++17',
     'warning_level=3',

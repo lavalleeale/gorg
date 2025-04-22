@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
     gorg.setupWindow();
     gorg.setupKeybindings();
     gorg.setupActions();
-    gorg.search("");
+    gorg.search();
     return gorg.run();
 }

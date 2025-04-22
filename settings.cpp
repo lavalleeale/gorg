@@ -13,6 +13,7 @@ static int windowWidth = 600;
 static int windowHeight = 200;
 static unsigned int maxResults = 25;
 static std::string customCss;
+static std::string lastQuery;
 static nlohmann::json pluginSettings;
 static std::once_flag loaded;
 
@@ -34,6 +35,7 @@ void loadFromDir(const std::string &directory)
         windowWidth = j.value("windowWidth", 600);
         windowHeight = j.value("windowHeight", 200);
         maxResults = j.value("maxResults", 25);
+        lastQuery = j.value("lastQuery", "");
         pluginSettings = j.value("plugins", nlohmann::json::object());
         std::ifstream customCssFile(directory + "/style.css");
         if (customCssFile.is_open())
@@ -109,4 +111,57 @@ std::string getCustomCss()
     std::call_once(loaded, []()
                    { load(); });
     return customCss;
+}
+
+std::string getLastQuery()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return lastQuery;
+}
+
+void saveLastQuery(const std::string &query)
+{
+    char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
+    std::string configPath;
+
+    if (xdgConfigHome)
+    {
+        configPath = std::string(xdgConfigHome) + "/gorg/config.json";
+    }
+    else
+    {
+        char *home = std::getenv("HOME");
+        if (home)
+        {
+            configPath = std::string(home) + "/.config/gorg/config.json";
+        }
+        else
+        {
+            std::cerr << "Could not find XDG_CONFIG_HOME or HOME environment variables" << std::endl;
+            return;
+        }
+    }
+
+    try
+    {
+        std::ifstream file(configPath);
+        nlohmann::json j;
+
+        if (file.is_open())
+        {
+            file >> j;
+            file.close();
+        }
+
+        j["lastQuery"] = query;
+
+        std::ofstream outFile(configPath);
+        outFile << j.dump(4);
+        outFile.close();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error saving last query: " << e.what() << std::endl;
+    }
 }
