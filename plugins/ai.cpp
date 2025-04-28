@@ -122,7 +122,7 @@ RunResult AIMatch::run()
 }
 
 AIMatch::AIMatch(const std::string &input, double relevance, int max_width, const std::string &url, const std::string &apiKey, const std::string &model)
-    : input(input), url(url), apiKey(apiKey), model(model), relevance(relevance), responseText("")
+    : input(input), responseText(""), relevance(relevance), url(url), apiKey(apiKey), model(model)
 {
     // Make sure lines wrap properly
     label.set_line_wrap(true);

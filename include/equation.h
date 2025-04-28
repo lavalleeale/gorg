@@ -16,7 +16,7 @@ public:
     EquationMatch(const std::string &input, float result, double relevance) : input(input), result(result), relevance(relevance) {};
     std::string getDisplay() const override;
     RunResult run() override { return CONTINUE; };
-    double getRelevance(const std::string &input) const override { return relevance; };
+    double getRelevance(const std::string &) const override { return relevance; };
     ~EquationMatch() override {};
 
 private:
