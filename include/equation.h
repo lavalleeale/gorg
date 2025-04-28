@@ -28,6 +28,7 @@ class Equation : public Plugin
 {
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
+    std::string getName() const override { return "equation"; };
     ~Equation() override {};
 };
 #endif

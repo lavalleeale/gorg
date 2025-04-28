@@ -18,34 +18,32 @@ Finder::Finder()
 
 Finder::Finder(const std::vector<std::string> &modes)
 {
-    std::string lowercase;
+    std::vector<Plugin *> allPlugins = {
+        new Drun(),
+        new Equation(),
+        new Chat(),
+        new Run(),
+        new Web(),
+        new Dmenu()};
     for (const auto &mode : modes)
     {
-        lowercase = mode;
-        std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
-        if (lowercase == "drun")
+        for (auto plugin : allPlugins)
         {
-            plugins.push_back(new Drun());
+            if (plugin->getName() == mode)
+            {
+                if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
+                {
+                    plugins.push_back(plugin);
+                }
+                break;
+            }
         }
-        else if (lowercase == "equation")
+    }
+    for (auto plugin : allPlugins)
+    {
+        if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
         {
-            plugins.push_back(new Equation());
-        }
-        else if (lowercase == "chat")
-        {
-            plugins.push_back(new Chat());
-        }
-        else if (lowercase == "run")
-        {
-            plugins.push_back(new Run());
-        }
-        else if (lowercase == "web")
-        {
-            plugins.push_back(new Web());
-        }
-        else if (lowercase == "dmenu")
-        {
-            plugins.push_back(new Dmenu());
+            delete plugin;
         }
     }
 }

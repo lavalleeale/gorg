@@ -27,6 +27,7 @@ class Run : public Plugin
 {
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
+    std::string getName() const override { return "run"; };
     ~Run() override {};
 };
 #endif

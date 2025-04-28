@@ -28,6 +28,7 @@ class Dmenu : public Plugin
 public:
     Dmenu();
     std::vector<Match *> getMatches(const std::string &input) const override;
+    std::string getName() const override { return "dmenu"; };
     ~Dmenu() override {};
 
 private:

@@ -29,6 +29,7 @@ class Drun : public Plugin
 {
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
+    std::string getName() const override { return "drun"; };
     ~Drun() override {};
 };
 #endif
