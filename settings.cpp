@@ -57,23 +57,7 @@ void loadFromDir(const std::string &directory)
 
 void load()
 {
-    char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
-    if (xdgConfigHome)
-    {
-        loadFromDir(std::string(xdgConfigHome) + "/gorg");
-    }
-    else
-    {
-        char *home = std::getenv("HOME");
-        if (home)
-        {
-            loadFromDir(std::string(home) + "/.config/gorg");
-        }
-        else
-        {
-            std::cerr << "Could not find XDG_CONFIG_HOME or HOME environment variables" << std::endl;
-        }
-    }
+    loadFromDir(getConfDir());
 }
 
 nlohmann::json getPluginSettings(const std::string &pluginName)
@@ -118,6 +102,28 @@ std::string getLastQuery()
     std::call_once(loaded, []()
                    { load(); });
     return lastQuery;
+}
+
+std::string getConfDir()
+{
+    char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
+    if (xdgConfigHome)
+    {
+        return std::string(xdgConfigHome) + "/gorg";
+    }
+    else
+    {
+        char *home = std::getenv("HOME");
+        if (home)
+        {
+            return std::string(home) + "/.config/gorg";
+        }
+        else
+        {
+            std::cerr << "Could not find XDG_CONFIG_HOME or HOME environment variables" << std::endl;
+            return "";
+        }
+    }
 }
 
 void saveLastQuery(const std::string &query)
