@@ -34,7 +34,7 @@ std::vector<Match *> Equation::getMatches(const std::string &input) const
     exprtk::expression<double> expression;
     if (parser.compile(input, expression))
     {
-        return {new EquationMatch(input, expression.value())};
+        return {new EquationMatch(input, expression.value(), pluginSettings.value("relevance", 1))};
     }
     else
     {
@@ -54,9 +54,4 @@ std::string EquationMatch::getDisplay() const
         lhs.pop_back();
     }
     return lhs.substr(lhs.find_last_of(';') + 1) + " = " + oss.str();
-}
-
-double EquationMatch::getRelevance(const std::string &) const
-{
-    return pluginSettings.value("relevanceScore", 1);
 }

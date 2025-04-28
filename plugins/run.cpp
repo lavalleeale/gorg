@@ -63,7 +63,7 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
                 file.close();
                 if (!name_line.empty() && hasAllChars(input, name_line))
                 {
-                    Match *match = new RunMatch(exec_line, name_line);
+                    Match *match = new RunMatch(exec_line, name_line, pluginSettings.value("relevance", 0.75));
                     binaries.push_back(match);
                 }
             }
@@ -110,5 +110,5 @@ RunResult RunMatch::run()
 
 double RunMatch::getRelevance(const std::string &input) const
 {
-    return pluginSettings.value("relevanceScore", 0.75) * fuzzyMatchScore(input, name);
+    return relevance * fuzzyMatchScore(input, name);
 }

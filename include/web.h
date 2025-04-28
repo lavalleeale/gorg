@@ -12,7 +12,7 @@
 class WebMatch : public Match
 {
 public:
-    WebMatch(const std::string &input) : input(input) {};
+    WebMatch(const std::string &input, double relevance, const std::string &searchUrl) : input(input), relevance(relevance), searchUrl(searchUrl) {};
     std::string getDisplay() const override;
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
@@ -20,7 +20,8 @@ public:
 
 private:
     std::string input;
-    nlohmann::json pluginSettings = getPluginSettings("web");
+    double relevance;
+    std::string searchUrl;
 };
 class Web : public Plugin
 {

@@ -1,21 +1,21 @@
 // C++ Standard Library
 #include <iostream>
-#include <thread>
+#include <future>
 
 // External Libraries
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
 // Local Headers
-#include <chat.h>
+#include <ai.h>
 #include <settings.h>
 
 using json = nlohmann::json;
 
 // This callback gets called for each chunk of data received.
-size_t ChatMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
+size_t AIMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    ChatMatch *self = static_cast<ChatMatch *>(userdata);
+    AIMatch *self = static_cast<AIMatch *>(userdata);
     size_t totalSize = size * nmemb;
     std::string data(ptr, totalSize);
 
@@ -68,7 +68,7 @@ size_t ChatMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *user
     return totalSize;
 }
 
-RunResult ChatMatch::run()
+RunResult AIMatch::run()
 {
     // Set initial response text from settings
     responseText = "Thinking...";
@@ -81,12 +81,9 @@ RunResult ChatMatch::run()
         return CONTINUE;
     }
 
-    // Get API URL from settings
-    const std::string url = pluginSettings.value("apiUrl", "http://localhost:11434/v1/chat/completions");
-
     // Construct your JSON request payload
     json requestPayload = {
-        {"model", pluginSettings.value("model", "llama2:7b")},
+        {"model", model},
         {"stream", true},
         {"messages",
          {
@@ -95,15 +92,15 @@ RunResult ChatMatch::run()
     };
 
     std::string requestData = requestPayload.dump();
-    std::string authHeader = "Authorization: Bearer " + pluginSettings.value("apiKey", "");
+    std::string authHeader = "Authorization: Bearer " + apiKey;
 
     struct curl_slist *headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
     headers = curl_slist_append(headers, authHeader.c_str());
 
-    // Replace the synchronous call with a background thread:
-    std::thread backgroundThread([this, curl, headers, requestData, url]()
-                                 {
+    // Use std::async to manage the thread's lifetime explicitly:
+    auto backgroundTask = std::async(std::launch::async, [this, curl, headers, requestData]()
+                                     {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestData.c_str());
@@ -120,22 +117,17 @@ RunResult ChatMatch::run()
         }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl); });
-    backgroundThread.detach();
 
     return TAKEOVER;
 }
 
-ChatMatch::ChatMatch(const std::string &input)
+AIMatch::AIMatch(const std::string &input, double relevance, int max_width, const std::string &url, const std::string &apiKey, const std::string &model)
+    : input(input), url(url), apiKey(apiKey), model(model), relevance(relevance), responseText("")
 {
-    this->input = input;
-    this->responseText = "";
-
-    pluginSettings = getPluginSettings("ai");
-
     // Make sure lines wrap properly
     label.set_line_wrap(true);
     label.set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
-    label.set_max_width_chars(pluginSettings.value("maxWidth", 40));
+    label.set_max_width_chars(max_width);
     label.set_size_request(50, -1);
 
     // Connect the signal to update the label text
@@ -143,25 +135,32 @@ ChatMatch::ChatMatch(const std::string &input)
                                 { label.set_text(this->responseText); });
 }
 
-std::string ChatMatch::getDisplay() const
+std::string AIMatch::getDisplay() const
 {
-    return "Ask ChatGPT: " + input;
+    return "Ask AI: " + input;
 }
 
-double ChatMatch::getRelevance(const std::string &input) const
+double AIMatch::getRelevance(const std::string &input) const
 {
     if (input.empty())
     {
         return 0;
     }
-    return pluginSettings.value("relevanceScore", 0.5);
+    return relevance;
 }
 
-std::vector<Match *> Chat::getMatches(const std::string &input) const
+std::vector<Match *> AI::getMatches(const std::string &input) const
 {
     if (input.empty())
     {
         return {};
     }
-    return {new ChatMatch(input)};
+    return {
+        new AIMatch(
+            input,
+            pluginSettings.value("relevance", 0.5),
+            pluginSettings.value("maxWidth", 50),
+            pluginSettings.value("apiUrl", "http://localhost:11434/v1/chat/completions"),
+            pluginSettings.value("apiKey", ""),
+            pluginSettings.value("model", "llama2:7b"))};
 }

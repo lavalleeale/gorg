@@ -1,27 +1,42 @@
 #include <iostream>
 #include "sample.h"
+#include <stringMatch.h>
 
 std::string SampleMatch::getDisplay() const
 {
-    return "Sample Match: " + input;
+    return value;
 }
 
 RunResult SampleMatch::run()
 {
-    std::cout << "Running Sample Match with input: " << input << std::endl;
+    std::cout << "Running Sample Match with value: " << value << std::endl;
     return RunResult::CLOSE;
 }
 
 double SampleMatch::getRelevance(const std::string &input) const
 {
-    // Simple relevance calculation based on input length
-    return 1;
+    return fuzzyMatchScore(input, value);
 }
 
 std::vector<Match *> SamplePlugin::getMatches(const std::string &input) const
 {
+    // get options array from pluginSettings
     std::vector<Match *> matches;
-    matches.push_back(new SampleMatch(input));
+    if (pluginSettings.find("options") == pluginSettings.end())
+    {
+        std::cerr << "No options found in plugin settings." << std::endl;
+    }
+    else
+    {
+        for (const auto &item : pluginSettings["options"])
+        {
+            std::string value = item.get<std::string>();
+            if (hasAllChars(input, value))
+            {
+                matches.push_back(new SampleMatch(value));
+            }
+        }
+    }
     return matches;
 }
 

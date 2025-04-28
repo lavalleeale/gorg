@@ -12,7 +12,7 @@
 class RunMatch : public Match
 {
 public:
-    RunMatch(const std::string &exec, const std::string &name) : exec(exec), name(name) {};
+    RunMatch(const std::string &exec, const std::string &name, double relevance) : exec(exec), name(name), relevance(relevance) {};
     std::string getDisplay() const override;
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
@@ -21,7 +21,7 @@ public:
 private:
     std::string exec;
     std::string name;
-    nlohmann::json pluginSettings = getPluginSettings("run");
+    double relevance;
 };
 class Run : public Plugin
 {

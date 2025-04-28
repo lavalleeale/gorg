@@ -9,30 +9,31 @@
 #include <match.h>
 #include <plugin.h>
 
-class ChatMatch : public Match
+class AIMatch : public Match
 {
 public:
-    ChatMatch(const std::string &input);
+    AIMatch(const std::string &input, double relevance, int max_width, const std::string &url, const std::string &apiKey, const std::string &model);
     std::string getDisplay() const override;
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
     Gtk::Widget *getWidget() override { return &label; };
-    ~ChatMatch() override {};
+    ~AIMatch() override {};
 
 private:
-    nlohmann::json pluginSettings;
     std::string input;
     std::string responseText;
     Gtk::Label label;
     Glib::Dispatcher signal_update_label;
     static size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
+    double relevance;
+    std::string url, apiKey, model;
 };
-class Chat : public Plugin
+class AI : public Plugin
 {
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
-    std::string getName() const override { return "chat"; };
-    ~Chat() override {};
+    std::string getName() const override { return "ai"; };
+    ~AI() override {};
 
 private:
 };

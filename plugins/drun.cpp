@@ -36,7 +36,7 @@ std::vector<Match *> Drun::getMatches(const std::string &input) const
                 {
                     if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
                     {
-                        binaries.push_back(new DrunMatch(entry.path()));
+                        binaries.push_back(new DrunMatch(entry.path(), pluginSettings.value("relevance", 0.5)));
                     }
                 }
             }
@@ -75,5 +75,5 @@ RunResult DrunMatch::run()
 
 double DrunMatch::getRelevance(const std::string &input) const
 {
-    return pluginSettings.value("relevanceScore", 0.7) * fuzzyMatchScore(input, path.filename().string());
+    return relevance * fuzzyMatchScore(input, path.filename().string());
 }

@@ -1,6 +1,6 @@
 // Local Headers
 #include <finder.h>
-#include <chat.h>
+#include <ai.h>
 #include <dmenu.h>
 #include <drun.h>
 #include <equation.h>
@@ -12,11 +12,12 @@ Finder::Finder()
 {
     plugins.push_back(new Drun());
     plugins.push_back(new Equation());
-    plugins.push_back(new Chat());
+    plugins.push_back(new AI());
     plugins.push_back(new Run());
     plugins.push_back(new Web());
     auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
     plugins.insert(plugins.end(), extPlugins.begin(), extPlugins.end());
+    loadPluginSettings();
 }
 
 Finder::Finder(const std::vector<std::string> &modes)
@@ -24,7 +25,7 @@ Finder::Finder(const std::vector<std::string> &modes)
     std::vector<Plugin *> allPlugins = {
         new Drun(),
         new Equation(),
-        new Chat(),
+        new AI(),
         new Run(),
         new Web(),
         new Dmenu()};
@@ -51,6 +52,7 @@ Finder::Finder(const std::vector<std::string> &modes)
             delete plugin;
         }
     }
+    loadPluginSettings();
 }
 
 Finder::~Finder()
@@ -88,4 +90,12 @@ void Finder::find(const std::string &query)
     }
     std::sort(matches.begin(), matches.end(), [&query](Match *a, Match *b)
               { return a->getRelevance(query) > b->getRelevance(query); });
+}
+
+void Finder::loadPluginSettings()
+{
+    for (auto plugin : plugins)
+    {
+        plugin->setSettings(getPluginSettings(plugin->getName()));
+    }
 }

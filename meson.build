@@ -16,7 +16,7 @@ src_files = files(
   './gorg.cpp',
   './main.cpp',
   './pluginLoader.cpp',
-  './plugins/chat.cpp',
+  './plugins/ai.cpp',
   './plugins/dmenu.cpp',
   './plugins/drun.cpp',
   './plugins/equation.cpp',

@@ -15,7 +15,7 @@
 class DrunMatch : public Match
 {
 public:
-    DrunMatch(const std::filesystem::path &path) : path(path), pluginSettings(getPluginSettings("drun")) {};
+    DrunMatch(const std::filesystem::path &path, double relevance) : path(path), relevance(relevance) {};
     std::string getDisplay() const override;
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
@@ -23,7 +23,7 @@ public:
 
 private:
     std::filesystem::path path;
-    nlohmann::json pluginSettings;
+    double relevance;
 };
 class Drun : public Plugin
 {

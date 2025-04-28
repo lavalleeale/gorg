@@ -13,16 +13,16 @@
 class EquationMatch : public Match
 {
 public:
-    EquationMatch(const std::string &input, float result) : input(input), result(result) {};
+    EquationMatch(const std::string &input, float result, double relevance) : input(input), result(result), relevance(relevance) {};
     std::string getDisplay() const override;
     RunResult run() override { return CONTINUE; };
-    double getRelevance(const std::string &input) const override;
+    double getRelevance(const std::string &input) const override { return relevance; };
     ~EquationMatch() override {};
 
 private:
     std::string input;
     float result;
-    nlohmann::json pluginSettings = getPluginSettings("equation");
+    double relevance;
 };
 class Equation : public Plugin
 {

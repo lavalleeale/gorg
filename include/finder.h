@@ -19,6 +19,7 @@ public:
     const std::vector<Match *> &getMatches() const { return matches; }
 
 private:
+    void loadPluginSettings();
     std::vector<Plugin *>
         plugins;
     std::vector<Match *> matches;

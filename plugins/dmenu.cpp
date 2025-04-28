@@ -36,7 +36,7 @@ Dmenu::Dmenu()
 
 double DmenuMatch::getRelevance(const std::string &) const
 {
-    return pluginSettings.value("relevanceScore", 0.5) * relevance;
+    return relevance;
 }
 
 std::string DmenuMatch::getDisplay() const
@@ -57,7 +57,7 @@ std::vector<Match *> Dmenu::getMatches(const std::string &input) const
     {
         if (hasAllChars(input, options[i]))
         {
-            matches.push_back(new DmenuMatch(options[i], static_cast<double>(options.size() - i) / options.size()));
+            matches.push_back(new DmenuMatch(options[i], pluginSettings.value("relevance", 1) * static_cast<double>(options.size() - i) / options.size()));
         }
     }
     return matches;

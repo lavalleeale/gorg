@@ -20,7 +20,6 @@ public:
 
 private:
     std::string value;
-    nlohmann::json pluginSettings = getPluginSettings("dmenu");
     double relevance;
 };
 class Dmenu : public Plugin

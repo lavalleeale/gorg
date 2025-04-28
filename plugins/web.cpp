@@ -38,7 +38,7 @@ RunResult WebMatch::run()
         // Detach from parent process
         setsid();
         // Execute the command using the shell
-        std::string query = pluginSettings.value("searchUrl", "https://www.google.com/search?q=") + url_encode(input);
+        std::string query = searchUrl + url_encode(input);
         std::string command = "xdg-open \"" + query + "\"";
         if (std::system(command.c_str()))
         {
@@ -60,7 +60,7 @@ double WebMatch::getRelevance(const std::string &input) const
     {
         return 0;
     }
-    return pluginSettings.value("relevanceScore", 0.5);
+    return relevance;
 }
 
 std::vector<Match *> Web::getMatches(const std::string &input) const
@@ -69,5 +69,9 @@ std::vector<Match *> Web::getMatches(const std::string &input) const
     {
         return {};
     }
-    return {new WebMatch(input)};
+    return {
+        new WebMatch(
+            input,
+            pluginSettings.value("relevance", 0.5),
+            pluginSettings.value("searchUrl", "https://www.google.com/search?q="))};
 }
