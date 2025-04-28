@@ -1,14 +1,12 @@
-project(
-    'sample_plugin',
-    'cpp',
-    version: '0.0.1',
-    default_options: ['cpp_std=c++17', 'warning_level=3', 'buildtype=release'],
-)
+project('external_plugins', 'c')
 
-# Define the library
-library(
-    'sample_plugin',
-    ['sample.cpp'],
-    include_directories: include_directories('../include'),
-    dependencies: dependency('gtkmm-3.0'),
-)
+subproj_names = ['sample', 'obsidian']
+all_tgts = []
+
+foreach n : subproj_names
+  sp          = subproject(n)
+  default_tgt = sp.get_variable('default_target', [])
+  all_tgts   += default_tgt
+endforeach
+
+alias_target('everything', all_tgts)

@@ -15,8 +15,11 @@ Finder::Finder()
     plugins.push_back(new AI());
     plugins.push_back(new Run());
     plugins.push_back(new Web());
-    auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
-    plugins.insert(plugins.end(), extPlugins.begin(), extPlugins.end());
+    auto userPlugins = loadPluginDirectory(getConfDir() + "/plugins");
+    plugins.insert(plugins.end(), userPlugins.begin(), userPlugins.end());
+    std::string systemPluginPath = std::getenv("GORG_SYSTEM_PLUGIN_PATH") ? std::getenv("GORG_SYSTEM_PLUGIN_PATH") : "/usr/local/share/gorg/plugins";
+    auto systemPlugins = loadPluginDirectory(systemPluginPath);
+    plugins.insert(plugins.end(), systemPlugins.begin(), systemPlugins.end());
     loadPluginSettings();
 }
 
