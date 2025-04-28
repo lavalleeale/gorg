@@ -6,6 +6,7 @@
 #include <equation.h>
 #include <run.h>
 #include <web.h>
+#include <pluginLoader.h>
 
 Finder::Finder()
 {
@@ -14,6 +15,8 @@ Finder::Finder()
     plugins.push_back(new Chat());
     plugins.push_back(new Run());
     plugins.push_back(new Web());
+    auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
+    plugins.insert(plugins.end(), extPlugins.begin(), extPlugins.end());
 }
 
 Finder::Finder(const std::vector<std::string> &modes)
@@ -25,6 +28,8 @@ Finder::Finder(const std::vector<std::string> &modes)
         new Run(),
         new Web(),
         new Dmenu()};
+    auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
+    allPlugins.insert(allPlugins.end(), extPlugins.begin(), extPlugins.end());
     for (const auto &mode : modes)
     {
         for (auto plugin : allPlugins)
