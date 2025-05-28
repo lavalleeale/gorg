@@ -14,6 +14,7 @@
 // Local Headers
 #include <TransparentWindow.h>
 #include <finder.h>
+#include <settings.h>
 
 class Gorg
 {
@@ -23,14 +24,14 @@ public:
     void setupWindow();
     void setupKeybindings();
     void setupActions();
-    void search();
+    void search(bool skipUpdate = false);
     int run();
 
 private:
     void handleRunResult(Match *match);
 
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("one.lavallee.gorg");
-    Glib::RefPtr<Gio::SimpleActionGroup> action_group = Gio::SimpleActionGroup::create();
+    Glib::RefPtr<Gio::SimpleActionGroup> actionGroup = Gio::SimpleActionGroup::create();
     Gtk::VBox mainVerticalLayout;
     Gtk::Entry prompt;
     Gtk::ScrolledWindow optionsScroll;
@@ -40,6 +41,7 @@ private:
 
     Finder *finder;
     Match *selectedMatch = nullptr;
-    Glib::RefPtr<Gio::Cancellable> image_cancellable;
+    Glib::RefPtr<Gio::Cancellable> imageCancellable;
+    float imageSize = getImageSize();
 };
 #endif

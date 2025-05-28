@@ -65,12 +65,12 @@ void Gorg::setupActions()
                                     { search(); });
 }
 
-void Gorg::search()
+void Gorg::search(bool skipUpdate)
 {
     // Cancel any in-flight image loads, then reset
-    if (image_cancellable)
-        image_cancellable->cancel();
-    image_cancellable = Gio::Cancellable::create();
+    if (imageCancellable)
+        imageCancellable->cancel();
+    imageCancellable = Gio::Cancellable::create();
 
     const std::string query = prompt.get_text();
 
@@ -87,7 +87,10 @@ void Gorg::search()
     {
         options.remove(*child);
     }
-    finder->find(query);
+    if (!skipUpdate)
+    {
+        finder->find(query);
+    }
     unsigned int i = 0;
     for (auto match : finder->getMatches())
     {
@@ -112,11 +115,11 @@ void Gorg::search()
             {
                 // Async load from file using a background thread
                 auto file_path = match->getIcon();
-                std::thread([file_path, icon]()
+                std::thread([file_path, icon, this]()
                             {
                     try {
                         auto pix = Gdk::Pixbuf::create_from_file(file_path);
-                        auto scaled = pix->scale_simple(32, 32, Gdk::INTERP_NEAREST);
+                        auto scaled = pix->scale_simple(static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())), static_cast<int>(imageSize), Gdk::INTERP_HYPER);
                         Glib::signal_idle().connect_once([icon, scaled]() {
                             icon->set(scaled);
                         });
@@ -136,11 +139,18 @@ void Gorg::search()
         button->signal_clicked().connect([match, this]()
                                          { handleRunResult(match); });
         Gtk::HBox *optionBox = Gtk::manage(new Gtk::HBox());
-        optionBox->pack_start(*label, Gtk::PACK_EXPAND_WIDGET);
         if (icon)
         {
             optionBox->pack_start(*icon, Gtk::PACK_SHRINK);
         }
+        else
+        {
+            auto emptyIcon = Gtk::manage(new Gtk::Image());
+            emptyIcon->set_pixel_size(imageSize);
+            emptyIcon->show();
+            optionBox->pack_start(*emptyIcon, Gtk::PACK_SHRINK);
+        }
+        optionBox->pack_start(*label, Gtk::PACK_EXPAND_WIDGET);
         button->add(*optionBox);
         optionBox->show();
         options.add(*button);
@@ -169,6 +179,20 @@ void Gorg::setupArguments(int argc, char *argv[])
     autoRestoreEntry.set_description("Enable or disable automatic query restoration (default: disabled)");
     group.add_entry(autoRestoreEntry, autoRestoreFlag);
 
+    Glib::OptionEntry startingQueryEntry;
+    Glib::ustring startingQuery;
+    startingQueryEntry.set_long_name("starting-query");
+    startingQueryEntry.set_short_name('q');
+    startingQueryEntry.set_description("Set the starting query text");
+    group.add_entry(startingQueryEntry, startingQuery);
+
+    Glib::OptionEntry bigEntry;
+    bool bigFlag = false;
+    bigEntry.set_long_name("big");
+    bigEntry.set_short_name('b');
+    bigEntry.set_description("Enable or disable big mode (default: disabled)");
+    group.add_entry(bigEntry, bigFlag);
+
     option_context.set_main_group(group);
 
     try
@@ -192,11 +216,28 @@ void Gorg::setupArguments(int argc, char *argv[])
         }
     }
     finder = allModes.empty() ? new Finder() : new Finder(allModes);
+
+    if (autoRestoreFlag && !startingQuery.empty())
+    {
+        std::cerr << "Warning: Both --auto-restore and --starting-query are set. Last query will be ignored." << std::endl;
+    }
+
     if (autoRestoreFlag)
     {
         // Restore the last query on startup
         std::string lastQuery = getLastQuery();
         prompt.set_text(lastQuery);
+    }
+
+    if (!startingQuery.empty())
+    {
+        prompt.set_text(startingQuery);
+    }
+
+    if (bigFlag)
+    {
+        imageSize *= 6;
+        window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 2);
     }
 }
 
@@ -216,7 +257,7 @@ void Gorg::setupWindow()
     window.set_accept_focus(true);
     window.set_focus_on_map(true);
     window.set_modal(true);
-    app->set_action_group(action_group);
+    app->set_action_group(actionGroup);
 
     // Set CSS provider for styling
     auto css_provider = Gtk::CssProvider::create();
@@ -290,8 +331,26 @@ void Gorg::setupWindow()
 void Gorg::setupKeybindings()
 {
     auto quitAction = Gio::SimpleAction::create("quit");
-    action_group->add_action(quitAction);
+    actionGroup->add_action(quitAction);
     quitAction->signal_activate().connect([this](const Glib::VariantBase)
                                           { app->quit(); });
     app->set_accel_for_action("app.quit", "Escape");
+    auto imageAction = Gio::SimpleAction::create("image-size");
+    actionGroup->add_action(imageAction);
+    imageAction->signal_activate().connect([this](const Glib::VariantBase)
+                                           {
+                                               if (std::fabs(imageSize - getImageSize()) < 1e-6)
+                                               {
+                                                   imageSize *= 4.0f;
+                                                   window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 2);
+                                               }
+                                               else
+                                               {
+                                                   imageSize = getImageSize();
+                                                   window.set_size_request(getWindowWidth(), getWindowHeight());
+                                               }
+                                               search(true); // Refresh search results with new image size
+                                           });
+    // Ctrl + Enter
+    app->set_accel_for_action("app.image-size", "<Control>Return");
 }

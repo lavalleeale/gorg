@@ -12,6 +12,7 @@
 static int windowWidth = 600;
 static int windowHeight = 200;
 static unsigned int maxResults = 25;
+static float imageSize = 32.0f; // Default image size
 static std::string customCss;
 static std::string lastQuery;
 static nlohmann::json pluginSettings;
@@ -35,6 +36,7 @@ void loadFromDir(const std::string &directory)
         windowWidth = j.value("windowWidth", 600);
         windowHeight = j.value("windowHeight", 200);
         maxResults = j.value("maxResults", 25);
+        imageSize = j.value("imageSize", 32.0f);
         lastQuery = j.value("lastQuery", "");
         pluginSettings = j.value("plugins", nlohmann::json::object());
         std::ifstream customCssFile(directory + "/style.css");
@@ -124,6 +126,13 @@ std::string getConfDir()
             return "";
         }
     }
+}
+
+float getImageSize()
+{
+    std::call_once(loaded, []()
+                   { load(); });
+    return imageSize;
 }
 
 void saveLastQuery(const std::string &query)

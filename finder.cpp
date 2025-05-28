@@ -81,18 +81,54 @@ RunResult Finder::RunMatch()
 
 void Finder::find(const std::string &query)
 {
+    // delete old matches
     for (auto match : matches)
     {
         delete match;
     }
     matches.clear();
+
+    // parse optional "!pluginName" prefix
+    std::string q = query;
+    std::string filter;
+    if (!q.empty() && q[0] == '!')
+    {
+        size_t pos = q.find(' ');
+        if (pos != std::string::npos)
+        {
+            filter = q.substr(1, pos - 1);
+            q = q.substr(pos + 1);
+        }
+        else
+        {
+            filter = q.substr(1);
+            q.clear();
+        }
+    }
+
+    bool found = false;
     for (auto plugin : plugins)
     {
-        auto pluginMatches = plugin->getMatches(query);
-        matches.insert(matches.end(), pluginMatches.begin(), pluginMatches.end());
+        if (plugin->getName() != filter)
+            continue;
+        found = true;
+        break;
     }
-    std::sort(matches.begin(), matches.end(), [&query](Match *a, Match *b)
-              { return a->getRelevance(query) > b->getRelevance(query); });
+    for (auto plugin : plugins)
+    {
+        if (found && plugin->getName() != filter)
+            continue;
+        auto pluginMatches = plugin->getMatches(q);
+        matches.insert(matches.end(), pluginMatches.begin(), pluginMatches.end());
+        if (found || matches.size() >= getMaxResults())
+        {
+            break; // stop searching if we found a match or reached max results
+        }
+    }
+
+    // sort by relevance against stripped query
+    std::sort(matches.begin(), matches.end(), [&q](Match *a, Match *b)
+              { return a->getRelevance(q) > b->getRelevance(q); });
 }
 
 void Finder::loadPluginSettings()
