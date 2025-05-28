@@ -5,6 +5,7 @@
 #include <string>
 
 // GTK/GLib Libraries
+#include <giomm/cancellable.h>
 #include <giomm/simpleactiongroup.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/hvbox.h>
@@ -39,5 +40,6 @@ private:
 
     Finder *finder;
     Match *selectedMatch = nullptr;
+    Glib::RefPtr<Gio::Cancellable> image_cancellable;
 };
 #endif

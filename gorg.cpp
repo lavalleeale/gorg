@@ -1,11 +1,13 @@
 // C++ Standard Library
 #include <iostream>
+#include <thread>
 
 // GTK/GLib Libraries
 #include <glibmm/optioncontext.h>
 #include <gtkmm/application.h>
 #include <gtkmm/button.h>
 #include <gtkmm/cssprovider.h>
+#include <glibmm/main.h>
 
 // Local Headers
 #include <TransparentWindow.h>
@@ -65,6 +67,11 @@ void Gorg::setupActions()
 
 void Gorg::search()
 {
+    // Cancel any in-flight image loads, then reset
+    if (image_cancellable)
+        image_cancellable->cancel();
+    image_cancellable = Gio::Cancellable::create();
+
     const std::string query = prompt.get_text();
 
     if (!options.is_visible())
@@ -94,11 +101,48 @@ void Gorg::search()
         label->set_ellipsize(Pango::EllipsizeMode::ELLIPSIZE_END);
         label->set_max_width_chars(40);
         label->set_size_request(50, -1);
+        label->show();
+        Gtk::Image *icon = nullptr;
+        if (!match->getIcon().empty())
+        {
+            icon = Gtk::manage(new Gtk::Image);
+            icon->set_pixel_size(32);
+
+            if (match->getIcon().find('/') != std::string::npos)
+            {
+                // Async load from file using a background thread
+                auto file_path = match->getIcon();
+                std::thread([file_path, icon]()
+                            {
+                    try {
+                        auto pix = Gdk::Pixbuf::create_from_file(file_path);
+                        auto scaled = pix->scale_simple(32, 32, Gdk::INTERP_NEAREST);
+                        Glib::signal_idle().connect_once([icon, scaled]() {
+                            icon->set(scaled);
+                        });
+                    } catch (const Glib::Error &ex) {
+                        std::cerr << "Icon load failed: " << ex.what() << std::endl;
+                    } })
+                    .detach();
+            }
+            else
+            {
+                icon->set_from_icon_name(match->getIcon(),
+                                         Gtk::ICON_SIZE_LARGE_TOOLBAR);
+            }
+            icon->show();
+        }
         Gtk::Button *button = Gtk::manage(new Gtk::Button());
         button->signal_clicked().connect([match, this]()
                                          { handleRunResult(match); });
-        button->add(*label);
-        label->show();
+        Gtk::HBox *optionBox = Gtk::manage(new Gtk::HBox());
+        optionBox->pack_start(*label, Gtk::PACK_EXPAND_WIDGET);
+        if (icon)
+        {
+            optionBox->pack_start(*icon, Gtk::PACK_SHRINK);
+        }
+        button->add(*optionBox);
+        optionBox->show();
         options.add(*button);
         button->show();
     }

@@ -12,8 +12,9 @@
 class RunMatch : public Match
 {
 public:
-    RunMatch(const std::string &exec, const std::string &name, double relevance) : exec(exec), name(name), relevance(relevance) {};
+    RunMatch(const std::string &exec, const std::string &name, const std::string &icon, double relevance) : exec(exec), name(name), icon(icon), relevance(relevance) {};
     std::string getDisplay() const override;
+    std::string getIcon() const override { return icon; }
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
     ~RunMatch() override {};
@@ -21,6 +22,7 @@ public:
 private:
     std::string exec;
     std::string name;
+    std::string icon;
     double relevance;
 };
 class Run : public Plugin

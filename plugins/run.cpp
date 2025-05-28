@@ -44,6 +44,7 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
                 }
                 std::string line;
                 std::string name_line;
+                std::string icon_line;
                 std::string exec_line;
                 while (std::getline(file, line))
                 {
@@ -55,7 +56,11 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
                     {
                         exec_line = line.substr(5);
                     }
-                    if (!name_line.empty() && !exec_line.empty())
+                    if (line.find("Icon=") == 0)
+                    {
+                        icon_line = line.substr(5);
+                    }
+                    if (!name_line.empty() && !exec_line.empty() && !icon_line.empty())
                     {
                         break;
                     }
@@ -63,7 +68,7 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
                 file.close();
                 if (!name_line.empty() && hasAllChars(input, name_line))
                 {
-                    Match *match = new RunMatch(exec_line, name_line, pluginSettings.value("relevance", 0.75));
+                    Match *match = new RunMatch(exec_line, name_line, icon_line, pluginSettings.value("relevance", 0.75));
                     binaries.push_back(match);
                 }
             }
