@@ -92,6 +92,9 @@ void Gorg::search(bool skipUpdate)
         finder->find(query);
     }
     unsigned int i = 0;
+    // Collect image widgets and their sources for deferred loading
+    imagesToLoad.clear();
+
     for (auto match : finder->getMatches())
     {
         if (++i > getMaxResults())
@@ -111,28 +114,9 @@ void Gorg::search(bool skipUpdate)
             icon = Gtk::manage(new Gtk::Image);
             icon->set_pixel_size(32);
 
-            if (match->getIcon().find('/') != std::string::npos)
-            {
-                // Async load from file using a background thread
-                auto file_path = match->getIcon();
-                std::thread([file_path, icon, this]()
-                            {
-                    try {
-                        auto pix = Gdk::Pixbuf::create_from_file(file_path);
-                        auto scaled = pix->scale_simple(static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())), static_cast<int>(imageSize), Gdk::INTERP_HYPER);
-                        Glib::signal_idle().connect_once([icon, scaled]() {
-                            icon->set(scaled);
-                        });
-                    } catch (const Glib::Error &ex) {
-                        std::cerr << "Icon load failed: " << ex.what() << std::endl;
-                    } })
-                    .detach();
-            }
-            else
-            {
-                icon->set_from_icon_name(match->getIcon(),
-                                         Gtk::ICON_SIZE_LARGE_TOOLBAR);
-            }
+            // Defer image loading
+            bool isFile = (match->getIcon().find('/') != std::string::npos);
+            imagesToLoad.push_back({icon, match->getIcon(), isFile});
             icon->show();
         }
         Gtk::Button *button = Gtk::manage(new Gtk::Button());
@@ -156,6 +140,41 @@ void Gorg::search(bool skipUpdate)
         options.add(*button);
         button->show();
     }
+
+    unsigned int imageThreads = std::thread::hardware_concurrency();
+    if (imageThreads == 0)
+    {
+        imageThreads = 1; // Fallback to single-threaded if hardware concurrency is not available
+    }
+    for (unsigned int i = 0; i < imageThreads; ++i)
+        std::thread([i, imageThreads, this]()
+                    {
+        // Load all images after the loop
+        for (unsigned int j = i; j < imagesToLoad.size(); j+= imageThreads)
+        {
+            auto &imgInfo = imagesToLoad[j];
+            if (imgInfo.isFile)
+            {
+                auto file_path = imgInfo.iconPath;
+                auto icon = imgInfo.image;
+                try
+                {
+                    auto pix = Gdk::Pixbuf::create_from_file(file_path);
+                    auto scaled = pix->scale_simple(static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())), static_cast<int>(imageSize), Gdk::INTERP_NEAREST);
+                    Glib::signal_idle().connect_once([icon, scaled]()
+                                                     { icon->set(scaled); });
+                }
+                catch (const Glib::Error &ex)
+                {
+                    std::cerr << "Icon load failed: " << ex.what() << std::endl;
+                }
+            }
+            else
+            {
+                imgInfo.image->set_from_icon_name(imgInfo.iconPath, Gtk::ICON_SIZE_LARGE_TOOLBAR);
+            }
+        } })
+            .detach();
 }
 
 void Gorg::setupArguments(int argc, char *argv[])

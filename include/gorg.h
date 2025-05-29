@@ -28,6 +28,13 @@ public:
     int run();
 
 private:
+    struct ImageInfo
+    {
+        Gtk::Image *image;
+        std::string iconPath;
+        bool isFile;
+    };
+    std::vector<ImageInfo> imagesToLoad;
     void handleRunResult(Match *match);
 
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("one.lavallee.gorg");
