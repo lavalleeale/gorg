@@ -64,10 +64,6 @@ Finder::~Finder()
     {
         delete plugin;
     }
-    for (auto match : matches)
-    {
-        delete match;
-    }
 }
 
 RunResult Finder::RunMatch()
@@ -81,11 +77,6 @@ RunResult Finder::RunMatch()
 
 void Finder::find(const std::string &query)
 {
-    // delete old matches
-    for (auto match : matches)
-    {
-        delete match;
-    }
     matches.clear();
 
     // parse optional "!pluginName" prefix

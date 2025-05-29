@@ -149,18 +149,38 @@ double AIMatch::getRelevance(const std::string &input) const
     return relevance;
 }
 
+void AIMatch::updateInput(const std::string &input)
+{
+    this->input = input;
+}
+
 std::vector<Match *> AI::getMatches(const std::string &input) const
 {
     if (input.empty())
     {
         return {};
     }
-    return {
-        new AIMatch(
-            input,
-            pluginSettings.value("relevance", 0.5),
-            pluginSettings.value("maxWidth", 50),
-            pluginSettings.value("apiUrl", "http://localhost:11434/v1/chat/completions"),
-            pluginSettings.value("apiKey", ""),
-            pluginSettings.value("model", "llama2:7b"))};
+    currentMatch->updateInput(input);
+    return {currentMatch};
+}
+
+AI::~AI()
+{
+    if (currentMatch)
+    {
+        delete currentMatch;
+        currentMatch = nullptr;
+    }
+}
+
+void AI::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
+    currentMatch = new AIMatch(
+        settings.value("input", ""),
+        settings.value("relevance", 0.5),
+        settings.value("maxWidth", 50),
+        settings.value("apiUrl", "https://api.openai.com/v1/chat/completions"),
+        settings.value("apiKey", ""),
+        settings.value("model", "gpt-3.5-turbo"));
 }

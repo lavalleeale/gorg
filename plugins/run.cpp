@@ -8,12 +8,66 @@
 
 std::vector<Match *> Run::getMatches(const std::string &input) const
 {
+    std::vector<Match *> matches;
+    for (const auto &item : cache)
+    {
+        if (hasAllChars(input, item->getDisplay()))
+        {
+            matches.push_back(item);
+        }
+    }
+    return matches;
+}
+
+std::string RunMatch::getDisplay() const
+{
+    return name;
+}
+
+RunResult RunMatch::run()
+{
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        setsid();
+        std::istringstream iss(exec);
+        std::vector<std::string> args;
+        std::string token;
+        while (iss >> token)
+        {
+            // Skip arguments that start with %
+            if (!token.empty() && token[0] != '%')
+            {
+                args.push_back(token);
+            }
+        }
+        // Build argv vector; safe to use c_str() as strings persist in args vector.
+        std::vector<char *> argv;
+        for (auto &arg : args)
+        {
+            argv.push_back(const_cast<char *>(arg.c_str()));
+        }
+        argv.push_back(nullptr);
+        execvp(argv[0], argv.data());
+        std::cerr << "Failed to execute " << argv[0] << std::endl;
+        _exit(127);
+    }
+    return CLOSE;
+}
+
+double RunMatch::getRelevance(const std::string &input) const
+{
+    return relevance * fuzzyMatchScore(input, name);
+}
+
+void Run::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
     char *data_env = std::getenv("XDG_DATA_DIRS");
     if (data_env == nullptr)
     {
-        return {};
+        return;
     }
-    std::vector<Match *> binaries;
     std::string data_str(data_env);
     size_t start = 0;
     size_t end = data_str.find(':');
@@ -66,54 +120,12 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
                     }
                 }
                 file.close();
-                if (!name_line.empty() && hasAllChars(input, name_line))
+                if (!name_line.empty())
                 {
-                    Match *match = new RunMatch(exec_line, name_line, icon_line, pluginSettings.value("relevance", 0.75));
-                    binaries.push_back(match);
+                    RunMatch *match = new RunMatch(exec_line, name_line, icon_line, pluginSettings.value("relevance", 0.75));
+                    cache.push_back(match);
                 }
             }
         }
     }
-    return binaries;
-}
-
-std::string RunMatch::getDisplay() const
-{
-    return name;
-}
-
-RunResult RunMatch::run()
-{
-    pid_t pid = fork();
-    if (pid == 0)
-    {
-        setsid();
-        std::istringstream iss(exec);
-        std::vector<std::string> args;
-        std::string token;
-        while (iss >> token)
-        {
-            // Skip arguments that start with %
-            if (!token.empty() && token[0] != '%')
-            {
-                args.push_back(token);
-            }
-        }
-        // Build argv vector; safe to use c_str() as strings persist in args vector.
-        std::vector<char *> argv;
-        for (auto &arg : args)
-        {
-            argv.push_back(const_cast<char *>(arg.c_str()));
-        }
-        argv.push_back(nullptr);
-        execvp(argv[0], argv.data());
-        std::cerr << "Failed to execute " << argv[0] << std::endl;
-        _exit(127);
-    }
-    return CLOSE;
-}
-
-double RunMatch::getRelevance(const std::string &input) const
-{
-    return relevance * fuzzyMatchScore(input, name);
 }

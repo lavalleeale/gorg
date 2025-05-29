@@ -69,9 +69,19 @@ std::vector<Match *> Web::getMatches(const std::string &input) const
     {
         return {};
     }
-    return {
-        new WebMatch(
-            input,
-            pluginSettings.value("relevance", 0.5),
-            pluginSettings.value("searchUrl", "https://www.google.com/search?q="))};
+    currentMatch->updateInput(input);
+    return {currentMatch};
+}
+
+void WebMatch::updateInput(const std::string &input)
+{
+    this->input = input;
+}
+void Web::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
+    currentMatch = new WebMatch(
+        "",
+        pluginSettings.value("relevance", 0.5),
+        pluginSettings.value("searchUrl", "https://www.google.com/search?q="));
 }

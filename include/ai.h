@@ -17,6 +17,7 @@ public:
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
     Gtk::Widget *getWidget() override { return &label; };
+    void updateInput(const std::string &input);
     ~AIMatch() override {};
 
 private:
@@ -33,7 +34,11 @@ class AI : public Plugin
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "ai"; };
-    ~AI() override {};
+    void setSettings(const nlohmann::json &settings) override;
+    ~AI() override;
+
+private:
+    AIMatch *currentMatch = nullptr;
 
 private:
 };

@@ -11,39 +11,11 @@
 std::vector<Match *> Drun::getMatches(const std::string &input) const
 {
     std::vector<Match *> binaries;
-    char *path_env = std::getenv("PATH");
-    if (path_env == nullptr)
+    for (const auto &item : cache)
     {
-        return binaries;
-    }
-    std::string path_str(path_env);
-    size_t start = 0;
-    size_t end = path_str.find(PATH_SEPARATOR);
-    while (end != std::string::npos)
-    {
-        std::string dir = path_str.substr(start, end - start);
-        start = end + 1;
-        end = path_str.find(PATH_SEPARATOR, start);
-        if (!std::filesystem::is_directory(dir))
+        if (hasAllChars(input, item->getDisplay()))
         {
-            continue;
-        }
-        for (const auto &entry : std::filesystem::directory_iterator(dir))
-        {
-            try
-            {
-                if (hasAllChars(input, entry.path().filename().string()))
-                {
-                    if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
-                    {
-                        binaries.push_back(new DrunMatch(entry.path(), pluginSettings.value("relevance", 0.5)));
-                    }
-                }
-            }
-            catch (const std::filesystem::filesystem_error &e)
-            {
-                continue;
-            }
+            binaries.push_back(item);
         }
     }
     return binaries;
@@ -76,4 +48,41 @@ RunResult DrunMatch::run()
 double DrunMatch::getRelevance(const std::string &input) const
 {
     return relevance * fuzzyMatchScore(input, path.filename().string());
+}
+
+void Drun::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
+    char *path_env = std::getenv("PATH");
+    if (path_env == nullptr)
+    {
+        return;
+    }
+    std::string path_str(path_env);
+    size_t start = 0;
+    size_t end = path_str.find(PATH_SEPARATOR);
+    while (end != std::string::npos)
+    {
+        std::string dir = path_str.substr(start, end - start);
+        start = end + 1;
+        end = path_str.find(PATH_SEPARATOR, start);
+        if (!std::filesystem::is_directory(dir))
+        {
+            continue;
+        }
+        for (const auto &entry : std::filesystem::directory_iterator(dir))
+        {
+            try
+            {
+                if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
+                {
+                    cache.push_back(new DrunMatch(entry.path(), pluginSettings.value("relevance", 0.5)));
+                }
+            }
+            catch (const std::filesystem::filesystem_error &e)
+            {
+                continue;
+            }
+        }
+    }
 }

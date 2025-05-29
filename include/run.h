@@ -30,6 +30,10 @@ class Run : public Plugin
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "run"; };
+    void setSettings(const nlohmann::json &settings) override;
     ~Run() override {};
+
+private:
+    std::vector<RunMatch *> cache;
 };
 #endif

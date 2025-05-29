@@ -65,6 +65,19 @@ std::vector<Match *> WallpaperPlugin::getMatches(const std::string &input) const
 {
     // get options array from pluginSettings
     std::vector<Match *> matches;
+    for (const auto &item : cache)
+    {
+        if (hasAllChars(input, item->getName()))
+        {
+            matches.push_back(item);
+        }
+    }
+    return matches;
+}
+
+void WallpaperPlugin::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
     if (pluginSettings.find("wallpaperDir") == pluginSettings.end())
     {
         std::cerr << "No wallpaperDir found in plugin settings." << std::endl;
@@ -75,7 +88,7 @@ std::vector<Match *> WallpaperPlugin::getMatches(const std::string &input) const
         if (wallpaperDir.empty())
         {
             std::cerr << "Wallpaper directory is empty." << std::endl;
-            return matches;
+            return;
         }
         // Recursively search for files in the wallpaper directory
         for (const auto &entry : std::filesystem::recursive_directory_iterator(wallpaperDir))
@@ -84,14 +97,10 @@ std::vector<Match *> WallpaperPlugin::getMatches(const std::string &input) const
             {
                 std::string value = entry.path();
                 // Check if the input matches the file name
-                if (hasAllChars(input, value))
-                {
-                    matches.push_back(new WallpaperMatch(value, pluginSettings));
-                }
+                cache.push_back(new WallpaperMatch(value, pluginSettings));
             }
         }
     }
-    return matches;
 }
 
 extern "C" Plugin *create()

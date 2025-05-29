@@ -30,6 +30,10 @@ class Drun : public Plugin
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "drun"; };
+    void setSettings(const nlohmann::json &settings) override;
     ~Drun() override {};
+
+private:
+    std::vector<DrunMatch *> cache;
 };
 #endif

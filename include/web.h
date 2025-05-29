@@ -16,6 +16,7 @@ public:
     std::string getDisplay() const override;
     RunResult run() override;
     double getRelevance(const std::string &input) const override;
+    void updateInput(const std::string &input);
     ~WebMatch() override {};
 
 private:
@@ -28,7 +29,11 @@ class Web : public Plugin
 public:
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "web"; };
+    void setSettings(const nlohmann::json &settings) override;
     ~Web() override {};
+
+private:
+    WebMatch *currentMatch = nullptr;
 
 private:
 };

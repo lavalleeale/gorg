@@ -30,11 +30,9 @@ std::string trim(std::string str)
 
 std::vector<Match *> Equation::getMatches(const std::string &input) const
 {
-    exprtk::parser<double> parser;
-    exprtk::expression<double> expression;
-    if (parser.compile(input, expression))
+    if (currentMatch->setInput(input))
     {
-        return {new EquationMatch(input, expression.value(), pluginSettings.value("relevance", 1))};
+        return {currentMatch};
     }
     else
     {
@@ -54,4 +52,26 @@ std::string EquationMatch::getDisplay() const
         lhs.pop_back();
     }
     return lhs.substr(lhs.find_last_of(';') + 1) + " = " + oss.str();
+}
+
+bool EquationMatch::setInput(const std::string &input)
+{
+    if (parser.compile(input, expression))
+    {
+        this->input = input;
+        this->result = expression.value();
+        return true;
+    }
+    else
+    {
+        this->input = "";
+        this->result = 0.0f; // Reset result if parsing fails
+        return false;
+    }
+}
+
+void Equation::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
+    currentMatch = new EquationMatch("", 0, pluginSettings.value("relevance", 1));
 }
