@@ -237,7 +237,7 @@ void Gorg::setupArguments(int argc, char *argv[])
     if (bigFlag)
     {
         imageSize *= 6;
-        window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 2);
+        window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 4);
     }
 }
 
@@ -315,10 +315,10 @@ void Gorg::setupWindow()
     window.add(mainVerticalLayout);
     mainVerticalLayout.show();
 
-    mainVerticalLayout.add(prompt);
+    mainVerticalLayout.pack_start(prompt, Gtk::PACK_SHRINK);
     prompt.show();
     prompt.grab_focus(); // Focus the entry field on startup
-    mainVerticalLayout.add(optionsScroll);
+    mainVerticalLayout.pack_start(optionsScroll, Gtk::PACK_EXPAND_WIDGET);
     optionsScroll.show();
     optionsScroll.add(options);
     options.show();
@@ -342,7 +342,7 @@ void Gorg::setupKeybindings()
                                                if (std::fabs(imageSize - getImageSize()) < 1e-6)
                                                {
                                                    imageSize *= 4.0f;
-                                                   window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 2);
+                                                   window.set_size_request(getWindowWidth() * 2, getWindowHeight() * 4);
                                                }
                                                else
                                                {
