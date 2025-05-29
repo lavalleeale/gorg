@@ -266,7 +266,7 @@ void Gorg::setupWindow()
             color: white;
             background-color: rgba(40, 40, 80, 0.2);
             background-image: none;
-            border-radius: 10px;
+            border: none;
             padding: 5px;
             margin: 2px 10px;
         }
@@ -283,7 +283,6 @@ void Gorg::setupWindow()
         }
         label {
             color: white;
-            background-color: rgba(40, 40, 80, 0.2);
             background-image: none;
             border-radius: 10px;
             padding: 5px;
