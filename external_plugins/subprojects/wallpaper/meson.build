@@ -2,7 +2,7 @@ project(
     'wallpaper_plugin',
     'cpp',
     version: '0.0.1',
-    default_options: ['cpp_std=c++17', 'warning_level=3', 'buildtype=release'],
+    default_options: ['cpp_std=c++20', 'warning_level=3', 'buildtype=release'],
 )
 
 # Define the library

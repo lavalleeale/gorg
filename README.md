@@ -33,7 +33,7 @@ nix run github:lavalleeale/gorg
 - gtkmm-3.0
 - libcurl
 - pkg-config
-- g++ with C++17 support
+- g++ with c++20 support
 
 #### Build Steps
 
