@@ -97,21 +97,20 @@ void Finder::find(const std::string &query)
         }
     }
 
-    bool found = false;
+    unsigned int found = 0;
     for (auto plugin : plugins)
     {
-        if (plugin->getName() != filter)
+        if (!plugin->getName().starts_with(filter))
             continue;
-        found = true;
-        break;
+        found++;
     }
     for (auto plugin : plugins)
     {
-        if (found && plugin->getName() != filter)
+        if (found && !plugin->getName().starts_with(filter))
             continue;
         auto pluginMatches = plugin->getMatches(q);
         matches.insert(matches.end(), pluginMatches.begin(), pluginMatches.end());
-        if (found || matches.size() >= getMaxResults())
+        if ((--found == 0) || matches.size() >= getMaxResults())
         {
             break; // stop searching if we found a match or reached max results
         }

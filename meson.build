@@ -1,7 +1,7 @@
 project(
   'gorg',
   'cpp',
-  version: '0.5.0',
+  version: '0.5.1',
   default_options: ['cpp_std=c++20', 'warning_level=3', 'buildtype=release', 'b_lto=true'],
 )
 
