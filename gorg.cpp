@@ -147,12 +147,12 @@ void Gorg::search(bool skipUpdate)
         imageThreads = 1; // Fallback to single-threaded if hardware concurrency is not available
     }
     for (unsigned int i = 0; i < imageThreads; ++i)
-        std::thread([i, imageThreads, this]()
+        std::thread([i, imageThreads, capturedImages = imagesToLoad, capturedSize = imageSize]()
                     {
         // Load all images after the loop
-        for (unsigned int j = i; j < imagesToLoad.size(); j+= imageThreads)
+        for (unsigned int j = i; j < capturedImages.size(); j+= imageThreads)
         {
-            auto &imgInfo = imagesToLoad[j];
+            auto &imgInfo = capturedImages[j];
             if (imgInfo.isFile)
             {
                 auto file_path = imgInfo.iconPath;
@@ -160,7 +160,7 @@ void Gorg::search(bool skipUpdate)
                 try
                 {
                     auto pix = Gdk::Pixbuf::create_from_file(file_path);
-                    auto scaled = pix->scale_simple(static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())), static_cast<int>(imageSize), Gdk::INTERP_NEAREST);
+                    auto scaled = pix->scale_simple(static_cast<int>(std::round(capturedSize / pix->get_height() * pix->get_width())), static_cast<int>(capturedSize), Gdk::INTERP_NEAREST);
                     Glib::signal_idle().connect_once([icon, scaled]()
                                                      { icon->set(scaled); });
                 }
