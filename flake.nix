@@ -36,7 +36,7 @@
           default = self.packages.${system}.gorg;
           gorg = pkgs.stdenv.mkDerivation {
             pname = "gorg";
-            version = "0.5.1";
+            version = "0.5.2";
 
             src = ./.;
 
