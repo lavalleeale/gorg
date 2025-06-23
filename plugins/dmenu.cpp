@@ -53,10 +53,12 @@ void Dmenu::setSettings(const nlohmann::json &settings)
     }
     // consume all of stdin and store each line in options
     std::string line;
+    int lineCount = 0;
     while (std::getline(std::cin, line))
     {
         if (line.empty())
             break;
-        cache.push_back(new DmenuMatch(line, pluginSettings.value("relevance", 1)));
+        lineCount++;
+        cache.push_back(new DmenuMatch(line, -lineCount));
     }
 }
