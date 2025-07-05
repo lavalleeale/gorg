@@ -3,6 +3,8 @@
 
 // C++ Standard Library
 #include <vector>
+#include <map>
+#include <string>
 
 // Local Headers
 #include <match.h>
@@ -11,15 +13,15 @@
 class Finder
 {
 public:
-    Finder();
-    Finder(const std::vector<std::string> &modes);
+    Finder(const std::vector<std::string> &modes = {},
+           const std::map<std::string, std::map<std::string, std::string>> &pluginOptions = {});
     ~Finder();
     RunResult RunMatch();
     void find(const std::string &query);
     const std::vector<Match *> &getMatches() const { return matches; }
 
 private:
-    void loadPluginSettings();
+    void loadPluginSettings(const std::map<std::string, std::map<std::string, std::string>> &pluginOptions = {});
     std::vector<Plugin *>
         plugins;
     std::vector<Match *> matches;

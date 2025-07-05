@@ -191,6 +191,14 @@ void Gorg::setupArguments(int argc, char *argv[])
     entry.set_description("List of modes to load");
     group.add_entry(entry, modes);
 
+    // Add plugin option entry
+    std::vector<Glib::ustring> pluginOptions;
+    Glib::OptionEntry pluginOptionEntry;
+    pluginOptionEntry.set_long_name("option");
+    pluginOptionEntry.set_short_name('o');
+    pluginOptionEntry.set_description("Plugin option in format: plugin_name.setting=value");
+    group.add_entry(pluginOptionEntry, pluginOptions);
+
     Glib::OptionEntry autoRestoreEntry;
     bool autoRestoreFlag = false;
     autoRestoreEntry.set_long_name("auto-restore");
@@ -234,7 +242,32 @@ void Gorg::setupArguments(int argc, char *argv[])
             allModes.push_back(item);
         }
     }
-    finder = allModes.empty() ? new Finder() : new Finder(allModes);
+
+    // Process plugin options
+    std::map<std::string, std::map<std::string, std::string>> parsedPluginOptions;
+    for (const auto &option : pluginOptions)
+    {
+        std::string optionStr = option.raw();
+        size_t dotPos = optionStr.find('.');
+        size_t equalPos = optionStr.find('=');
+
+        if (dotPos != std::string::npos && equalPos != std::string::npos && dotPos < equalPos)
+        {
+            std::string pluginName = optionStr.substr(0, dotPos);
+            std::string settingName = optionStr.substr(dotPos + 1, equalPos - dotPos - 1);
+            std::string settingValue = optionStr.substr(equalPos + 1);
+
+            parsedPluginOptions[pluginName][settingName] = settingValue;
+        }
+        else
+        {
+            std::cerr << "Invalid plugin option format: " << optionStr << std::endl;
+            std::cerr << "Expected format: plugin_name.setting=value" << std::endl;
+        }
+    }
+
+    // Create finder with modes and plugin options
+    finder = new Finder(allModes, parsedPluginOptions);
 
     if (autoRestoreFlag && !startingQuery.empty())
     {

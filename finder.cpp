@@ -8,22 +8,7 @@
 #include <web.h>
 #include <pluginLoader.h>
 
-Finder::Finder()
-{
-    plugins.push_back(new Drun());
-    plugins.push_back(new Equation());
-    plugins.push_back(new AI());
-    plugins.push_back(new Run());
-    plugins.push_back(new Web());
-    auto userPlugins = loadPluginDirectory(getConfDir() + "/plugins");
-    plugins.insert(plugins.end(), userPlugins.begin(), userPlugins.end());
-    std::string systemPluginPath = std::getenv("GORG_SYSTEM_PLUGIN_PATH") ? std::getenv("GORG_SYSTEM_PLUGIN_PATH") : "/usr/local/share/gorg/plugins";
-    auto systemPlugins = loadPluginDirectory(systemPluginPath);
-    plugins.insert(plugins.end(), systemPlugins.begin(), systemPlugins.end());
-    loadPluginSettings();
-}
-
-Finder::Finder(const std::vector<std::string> &modes)
+Finder::Finder(const std::vector<std::string> &modes, const std::map<std::string, std::map<std::string, std::string>> &pluginOptions)
 {
     std::vector<Plugin *> allPlugins = {
         new Drun(),
@@ -32,30 +17,49 @@ Finder::Finder(const std::vector<std::string> &modes)
         new Run(),
         new Web(),
         new Dmenu()};
+
     auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
     allPlugins.insert(allPlugins.end(), extPlugins.begin(), extPlugins.end());
-    for (const auto &mode : modes)
+
+    std::string systemPluginPath = std::getenv("GORG_SYSTEM_PLUGIN_PATH") ? std::getenv("GORG_SYSTEM_PLUGIN_PATH") : "/usr/local/share/gorg/plugins";
+    auto systemPlugins = loadPluginDirectory(systemPluginPath);
+    allPlugins.insert(allPlugins.end(), systemPlugins.begin(), systemPlugins.end());
+
+    // If modes are specified, only load those plugins
+    if (!modes.empty())
     {
+        for (const auto &mode : modes)
+        {
+            for (auto plugin : allPlugins)
+            {
+                if (plugin->getName() == mode)
+                {
+                    if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
+                    {
+                        plugins.push_back(plugin);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Delete unused plugins
         for (auto plugin : allPlugins)
         {
-            if (plugin->getName() == mode)
+            if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
             {
-                if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
-                {
-                    plugins.push_back(plugin);
-                }
-                break;
+                delete plugin;
             }
         }
     }
-    for (auto plugin : allPlugins)
+    else
     {
-        if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
-        {
-            delete plugin;
-        }
+        // No modes specified, load default plugins
+        plugins = allPlugins;
     }
-    loadPluginSettings();
+
+    // Load settings with any command line overrides
+    loadPluginSettings(pluginOptions);
 }
 
 Finder::~Finder()
@@ -121,10 +125,42 @@ void Finder::find(const std::string &query)
               { return a->getRelevance(q) > b->getRelevance(q); });
 }
 
-void Finder::loadPluginSettings()
+void Finder::loadPluginSettings(const std::map<std::string, std::map<std::string, std::string>> &pluginOptions)
 {
     for (auto plugin : plugins)
     {
-        plugin->setSettings(getPluginSettings(plugin->getName()));
+        nlohmann::json settings = getPluginSettings(plugin->getName());
+
+        // Apply command line overrides if they exist for this plugin
+        auto pluginIt = pluginOptions.find(plugin->getName());
+        if (pluginIt != pluginOptions.end())
+        {
+            for (const auto &[key, value] : pluginIt->second)
+            {
+                // Try to parse the value as a number if possible
+                try
+                {
+                    if (value.find('.') != std::string::npos)
+                    {
+                        // Try as double
+                        double doubleValue = std::stod(value);
+                        settings[key] = doubleValue;
+                    }
+                    else
+                    {
+                        // Try as integer
+                        int intValue = std::stoi(value);
+                        settings[key] = intValue;
+                    }
+                }
+                catch (const std::exception &)
+                {
+                    // Not a number, treat as string
+                    settings[key] = value;
+                }
+            }
+        }
+
+        plugin->setSettings(settings);
     }
 }

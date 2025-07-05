@@ -87,5 +87,6 @@
     "cinttypes": "cpp",
     "future": "cpp",
     "filesystem": "cpp"
-  }
+  },
+  "mesonbuild.configureOnOpen": false
 }
