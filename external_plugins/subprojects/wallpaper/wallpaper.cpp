@@ -69,7 +69,7 @@ std::vector<Match *> WallpaperPlugin::getMatches(const std::string &input) const
     {
         if (hasAllChars(input, item->getName()))
         {
-            matches.push_back(item);
+            matches.push_back(item.get());
         }
     }
     return matches;
@@ -97,7 +97,7 @@ void WallpaperPlugin::setSettings(const nlohmann::json &settings)
             {
                 std::string value = entry.path();
                 // Check if the input matches the file name
-                cache.push_back(new WallpaperMatch(value, pluginSettings));
+                cache.push_back(std::make_unique<WallpaperMatch>(value, pluginSettings));
             }
         }
     }

@@ -3,6 +3,7 @@
 #include <plugin.h>
 #include <nlohmann/json.hpp>
 #include <settings.h>
+#include <memory>
 
 class SampleMatch : public Match
 {
@@ -20,10 +21,12 @@ private:
 class SamplePlugin : public Plugin
 {
 public:
+    void setSettings(const nlohmann::json &settings) override;
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "sample"; };
 
 private:
+    std::vector<std::unique_ptr<SampleMatch>> cache;
 };
 extern "C" Plugin *create();
 #endif

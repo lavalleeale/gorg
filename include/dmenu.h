@@ -1,6 +1,8 @@
 #ifndef __dmenu_h__
 #define __dmenu_h__
 
+#include <memory>
+
 // Third Party Libraries
 #include <nlohmann/json.hpp>
 
@@ -28,9 +30,9 @@ public:
     std::vector<Match *> getMatches(const std::string &input) const override;
     std::string getName() const override { return "dmenu"; };
     void setSettings(const nlohmann::json &settings) override;
-    ~Dmenu() override;
+    ~Dmenu() override {};
 
 private:
-    std::vector<DmenuMatch *> cache;
+    std::vector<std::unique_ptr<DmenuMatch>> cache;
 };
 #endif

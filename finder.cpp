@@ -10,52 +10,50 @@
 
 Finder::Finder(const std::vector<std::string> &modes, const std::map<std::string, std::map<std::string, std::string>> &pluginOptions)
 {
-    std::vector<Plugin *> allPlugins = {
-        new Drun(),
-        new Equation(),
-        new AI(),
-        new Run(),
-        new Web(),
-        new Dmenu()};
+    std::vector<std::unique_ptr<Plugin>> allPlugins;
+    allPlugins.push_back(std::make_unique<Drun>());
+    allPlugins.push_back(std::make_unique<Equation>());
+    allPlugins.push_back(std::make_unique<AI>());
+    allPlugins.push_back(std::make_unique<Run>());
+    allPlugins.push_back(std::make_unique<Web>());
+    allPlugins.push_back(std::make_unique<Dmenu>());
 
     auto extPlugins = loadPluginDirectory(getConfDir() + "/plugins");
-    allPlugins.insert(allPlugins.end(), extPlugins.begin(), extPlugins.end());
+    for (auto &loadedPlugin : extPlugins)
+    {
+        allPlugins.push_back(std::move(loadedPlugin.plugin));
+        loadedPlugin.plugin = nullptr;
+        loadedPlugins.push_back(std::move(loadedPlugin));
+    }
 
     std::string systemPluginPath = std::getenv("GORG_SYSTEM_PLUGIN_PATH") ? std::getenv("GORG_SYSTEM_PLUGIN_PATH") : "/usr/local/share/gorg/plugins";
     auto systemPlugins = loadPluginDirectory(systemPluginPath);
-    allPlugins.insert(allPlugins.end(), systemPlugins.begin(), systemPlugins.end());
+    for (auto &loadedPlugin : systemPlugins)
+    {
+        allPlugins.push_back(std::move(loadedPlugin.plugin));
+        loadedPlugin.plugin = nullptr;
+        loadedPlugins.push_back(std::move(loadedPlugin));
+    }
 
     // If modes are specified, only load those plugins
     if (!modes.empty())
     {
         for (const auto &mode : modes)
         {
-            for (auto plugin : allPlugins)
+            for (auto &plugin : allPlugins)
             {
-                if (plugin->getName() == mode)
+                if (plugin && plugin->getName() == mode)
                 {
-                    if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
-                    {
-                        plugins.push_back(plugin);
-                    }
+                    plugins.push_back(std::move(plugin));
                     break;
                 }
-            }
-        }
-
-        // Delete unused plugins
-        for (auto plugin : allPlugins)
-        {
-            if (std::find(plugins.begin(), plugins.end(), plugin) == plugins.end())
-            {
-                delete plugin;
             }
         }
     }
     else
     {
         // No modes specified, load default plugins
-        plugins = allPlugins;
+        plugins = std::move(allPlugins);
     }
 
     // Load settings with any command line overrides
@@ -64,10 +62,8 @@ Finder::Finder(const std::vector<std::string> &modes, const std::map<std::string
 
 Finder::~Finder()
 {
-    for (auto plugin : plugins)
-    {
-        delete plugin;
-    }
+    plugins.clear();
+    loadedPlugins.clear();
 }
 
 RunResult Finder::RunMatch()
@@ -102,13 +98,17 @@ void Finder::find(const std::string &query)
     }
 
     unsigned int found = 0;
-    for (auto plugin : plugins)
+    for (const auto &plugin : plugins)
     {
         if (!plugin->getName().starts_with(filter))
             continue;
         found++;
     }
-    for (auto plugin : plugins)
+    if (!filter.empty() && found == 0)
+    {
+        return;
+    }
+    for (const auto &plugin : plugins)
     {
         if (found && !plugin->getName().starts_with(filter))
             continue;
@@ -127,7 +127,7 @@ void Finder::find(const std::string &query)
 
 void Finder::loadPluginSettings(const std::map<std::string, std::map<std::string, std::string>> &pluginOptions)
 {
-    for (auto plugin : plugins)
+    for (const auto &plugin : plugins)
     {
         nlohmann::json settings = getPluginSettings(plugin->getName());
 

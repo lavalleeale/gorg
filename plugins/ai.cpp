@@ -17,6 +17,10 @@ size_t AIMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userda
 {
     AIMatch *self = static_cast<AIMatch *>(userdata);
     size_t totalSize = size * nmemb;
+    if (self->cancelled)
+    {
+        return 0;
+    }
     std::string data(ptr, totalSize);
 
     // Process each line of data (assuming chunks are newline-delimited)
@@ -51,11 +55,14 @@ size_t AIMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userda
                 continue;
             }
             std::string content = j["choices"][0]["delta"]["content"];
-            if (self->responseText == "Thinking...")
             {
-                self->responseText = "";
+                std::lock_guard<std::mutex> lock(self->responseMutex);
+                if (self->responseText == "Thinking...")
+                {
+                    self->responseText = "";
+                }
+                self->responseText += content;
             }
-            self->responseText += content;
             self->signal_update_label.emit();
         }
         catch (json::parse_error &e)
@@ -68,10 +75,19 @@ size_t AIMatch::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userda
     return totalSize;
 }
 
+int AIMatch::ProgressCallback(void *clientp, curl_off_t, curl_off_t, curl_off_t, curl_off_t)
+{
+    AIMatch *self = static_cast<AIMatch *>(clientp);
+    return self->cancelled ? 1 : 0;
+}
+
 RunResult AIMatch::run()
 {
     // Set initial response text from settings
-    responseText = "Thinking...";
+    {
+        std::lock_guard<std::mutex> lock(responseMutex);
+        responseText = "Thinking...";
+    }
     signal_update_label.emit();
 
     CURL *curl = curl_easy_init();
@@ -98,21 +114,33 @@ RunResult AIMatch::run()
     headers = curl_slist_append(headers, "Content-Type: application/json");
     headers = curl_slist_append(headers, authHeader.c_str());
 
-    // Use std::async to manage the thread's lifetime explicitly:
-    auto backgroundTask = std::async(std::launch::async, [this, curl, headers, requestData]()
+    if (backgroundTask.valid())
+    {
+        cancelled = true;
+        backgroundTask.wait();
+    }
+    cancelled = false;
+
+    backgroundTask = std::async(std::launch::async, [this, curl, headers, requestData]()
                                      {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestData.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 
         CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK)
+        if (res != CURLE_OK && !cancelled)
         {
             std::cerr << "curl_easy_perform() failed: "
                       << curl_easy_strerror(res) << std::endl;
-            responseText += "\nError: Failed to get response.";
+            {
+                std::lock_guard<std::mutex> lock(responseMutex);
+                responseText += "\nError: Failed to get response.";
+            }
             signal_update_label.emit();
         }
         curl_slist_free_all(headers);
@@ -132,7 +160,19 @@ AIMatch::AIMatch(const std::string &input, double relevance, int max_width, cons
 
     // Connect the signal to update the label text
     signal_update_label.connect([this]()
-                                { label.set_text(this->responseText); });
+                                {
+                                    std::lock_guard<std::mutex> lock(responseMutex);
+                                    label.set_text(this->responseText);
+                                });
+}
+
+AIMatch::~AIMatch()
+{
+    cancelled = true;
+    if (backgroundTask.valid())
+    {
+        backgroundTask.wait();
+    }
 }
 
 std::string AIMatch::getDisplay() const
@@ -160,23 +200,18 @@ std::vector<Match *> AI::getMatches(const std::string &input) const
     {
         return {};
     }
-    currentMatch->updateInput(input);
-    return {currentMatch};
-}
-
-AI::~AI()
-{
-    if (currentMatch)
+    if (!currentMatch)
     {
-        delete currentMatch;
-        currentMatch = nullptr;
+        return {};
     }
+    currentMatch->updateInput(input);
+    return {currentMatch.get()};
 }
 
 void AI::setSettings(const nlohmann::json &settings)
 {
     pluginSettings = settings;
-    currentMatch = new AIMatch(
+    currentMatch = std::make_unique<AIMatch>(
         settings.value("input", ""),
         settings.value("relevance", 0.5),
         settings.value("maxWidth", 50),

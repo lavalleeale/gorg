@@ -4,11 +4,13 @@
 // C++ Standard Library
 #include <vector>
 #include <map>
+#include <memory>
 #include <string>
 
 // Local Headers
 #include <match.h>
 #include <plugin.h>
+#include <pluginLoader.h>
 
 class Finder
 {
@@ -22,8 +24,8 @@ public:
 
 private:
     void loadPluginSettings(const std::map<std::string, std::map<std::string, std::string>> &pluginOptions = {});
-    std::vector<Plugin *>
-        plugins;
+    std::vector<std::unique_ptr<Plugin>> plugins;
+    std::vector<LoadedPlugin> loadedPlugins;
     std::vector<Match *> matches;
 };
 #endif

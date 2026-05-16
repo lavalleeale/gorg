@@ -20,8 +20,21 @@ double SampleMatch::getRelevance(const std::string &input) const
 
 std::vector<Match *> SamplePlugin::getMatches(const std::string &input) const
 {
-    // get options array from pluginSettings
     std::vector<Match *> matches;
+    for (const auto &item : cache)
+    {
+        if (hasAllChars(input, item->getDisplay()))
+        {
+            matches.push_back(item.get());
+        }
+    }
+    return matches;
+}
+
+void SamplePlugin::setSettings(const nlohmann::json &settings)
+{
+    pluginSettings = settings;
+    cache.clear();
     if (pluginSettings.find("options") == pluginSettings.end())
     {
         std::cerr << "No options found in plugin settings." << std::endl;
@@ -31,13 +44,9 @@ std::vector<Match *> SamplePlugin::getMatches(const std::string &input) const
         for (const auto &item : pluginSettings["options"])
         {
             std::string value = item.get<std::string>();
-            if (hasAllChars(input, value))
-            {
-                matches.push_back(new SampleMatch(value));
-            }
+            cache.push_back(std::make_unique<SampleMatch>(value));
         }
     }
-    return matches;
 }
 
 extern "C" Plugin *create()

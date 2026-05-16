@@ -3,6 +3,7 @@
 #include <plugin.h>
 #include <nlohmann/json.hpp>
 #include <settings.h>
+#include <memory>
 
 class WallpaperMatch : public Match
 {
@@ -28,7 +29,7 @@ public:
     void setSettings(const nlohmann::json &settings) override;
 
 private:
-    std::vector<WallpaperMatch *> cache;
+    std::vector<std::unique_ptr<WallpaperMatch>> cache;
 };
 extern "C" Plugin *create();
 #endif

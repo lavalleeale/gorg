@@ -37,3 +37,16 @@ executable(
   cpp_pch: './pch/gorg_pch.h',
   install: true,
 )
+
+test_core = executable(
+  'test_core',
+  sources: files(
+    './tests/test_core.cpp',
+    './plugins/equation.cpp',
+    './plugins/web.cpp',
+  ),
+  include_directories: inc_dirs,
+  dependencies: [gtkmm_dep],
+)
+
+test('core', test_core)

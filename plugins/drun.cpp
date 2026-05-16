@@ -15,7 +15,7 @@ std::vector<Match *> Drun::getMatches(const std::string &input) const
     {
         if (hasAllChars(input, item->getDisplay()))
         {
-            binaries.push_back(item);
+            binaries.push_back(item.get());
         }
     }
     return binaries;
@@ -60,12 +60,18 @@ void Drun::setSettings(const nlohmann::json &settings)
     }
     std::string path_str(path_env);
     size_t start = 0;
-    size_t end = path_str.find(PATH_SEPARATOR);
-    while (end != std::string::npos)
+    while (start <= path_str.size())
     {
+        size_t end = path_str.find(PATH_SEPARATOR, start);
         std::string dir = path_str.substr(start, end - start);
-        start = end + 1;
-        end = path_str.find(PATH_SEPARATOR, start);
+        if (end == std::string::npos)
+        {
+            start = path_str.size() + 1;
+        }
+        else
+        {
+            start = end + 1;
+        }
         if (!std::filesystem::is_directory(dir))
         {
             continue;
@@ -76,7 +82,7 @@ void Drun::setSettings(const nlohmann::json &settings)
             {
                 if (((std::filesystem::status(entry).permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) && std::filesystem::is_regular_file(entry))
                 {
-                    cache.push_back(new DrunMatch(entry.path(), pluginSettings.value("relevance", 0.5)));
+                    cache.push_back(std::make_unique<DrunMatch>(entry.path(), pluginSettings.value("relevance", 0.5)));
                 }
             }
             catch (const std::filesystem::filesystem_error &e)

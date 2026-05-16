@@ -1,6 +1,7 @@
 // C++ Standard Library
 #include <fstream>
 #include <iostream>
+#include <wordexp.h>
 
 // Project Headers
 #include <run.h>
@@ -13,7 +14,7 @@ std::vector<Match *> Run::getMatches(const std::string &input) const
     {
         if (hasAllChars(input, item->getDisplay()))
         {
-            matches.push_back(item);
+            matches.push_back(item.get());
         }
     }
     return matches;
@@ -30,16 +31,26 @@ RunResult RunMatch::run()
     if (pid == 0)
     {
         setsid();
-        std::istringstream iss(exec);
         std::vector<std::string> args;
-        std::string token;
-        while (iss >> token)
+        wordexp_t words;
+        if (wordexp(exec.c_str(), &words, WRDE_NOCMD) != 0)
         {
-            // Skip arguments that start with %
+            std::cerr << "Failed to parse Exec line: " << exec << std::endl;
+            _exit(127);
+        }
+        for (size_t i = 0; i < words.we_wordc; ++i)
+        {
+            std::string token(words.we_wordv[i]);
             if (!token.empty() && token[0] != '%')
             {
                 args.push_back(token);
             }
+        }
+        wordfree(&words);
+        if (args.empty())
+        {
+            std::cerr << "Exec line produced no command: " << exec << std::endl;
+            _exit(127);
         }
         // Build argv vector; safe to use c_str() as strings persist in args vector.
         std::vector<char *> argv;
@@ -122,8 +133,7 @@ void Run::setSettings(const nlohmann::json &settings)
                 file.close();
                 if (!name_line.empty())
                 {
-                    RunMatch *match = new RunMatch(exec_line, name_line, icon_line, pluginSettings.value("relevance", 0.75));
-                    cache.push_back(match);
+                    cache.push_back(std::make_unique<RunMatch>(exec_line, name_line, icon_line, pluginSettings.value("relevance", 0.75)));
                 }
             }
         }

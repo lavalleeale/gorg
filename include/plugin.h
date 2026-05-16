@@ -13,6 +13,8 @@
 class Plugin
 {
 public:
+    // Returned matches are borrowed by the caller and must remain valid until
+    // the plugin is updated or destroyed.
     virtual std::vector<Match *> getMatches(const std::string &) const { return {}; };
     virtual std::string getName() const { return "Plugin"; };
     virtual void setSettings(const nlohmann::json &settings) { pluginSettings = settings; };

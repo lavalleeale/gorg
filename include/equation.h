@@ -1,6 +1,8 @@
 #ifndef __equation_h__
 #define __equation_h__
 
+#include <memory>
+
 // External Libraries
 #include <exprtk.hpp>
 #include <nlohmann/json.hpp>
@@ -36,6 +38,6 @@ public:
     ~Equation() override {};
 
 private:
-    EquationMatch *currentMatch = nullptr;
+    std::unique_ptr<EquationMatch> currentMatch;
 };
 #endif

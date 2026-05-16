@@ -37,13 +37,9 @@ RunResult WebMatch::run()
     {
         // Detach from parent process
         setsid();
-        // Execute the command using the shell
         std::string query = searchUrl + url_encode(input);
-        std::string command = "xdg-open \"" + query + "\"";
-        if (std::system(command.c_str()))
-        {
-            std::cerr << "Failed to execute command: " << command << std::endl;
-        }
+        execlp("xdg-open", "xdg-open", query.c_str(), nullptr);
+        std::cerr << "Failed to execute xdg-open for: " << query << std::endl;
         _exit(127); // Exit child if execl fails
     }
     else if (pid < 0) // Fork failed
@@ -69,8 +65,12 @@ std::vector<Match *> Web::getMatches(const std::string &input) const
     {
         return {};
     }
+    if (!currentMatch)
+    {
+        return {};
+    }
     currentMatch->updateInput(input);
-    return {currentMatch};
+    return {currentMatch.get()};
 }
 
 void WebMatch::updateInput(const std::string &input)
@@ -80,7 +80,7 @@ void WebMatch::updateInput(const std::string &input)
 void Web::setSettings(const nlohmann::json &settings)
 {
     pluginSettings = settings;
-    currentMatch = new WebMatch(
+    currentMatch = std::make_unique<WebMatch>(
         "",
         pluginSettings.value("relevance", 0.5),
         pluginSettings.value("searchUrl", "https://www.google.com/search?q="));

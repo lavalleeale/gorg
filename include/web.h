@@ -1,6 +1,8 @@
 #ifndef __web_h__
 #define __web_h__
 
+#include <memory>
+
 // External Libraries
 #include <nlohmann/json.hpp>
 
@@ -8,6 +10,8 @@
 #include <match.h>
 #include <plugin.h>
 #include <settings.h>
+
+std::string url_encode(const std::string &value);
 
 class WebMatch : public Match
 {
@@ -33,8 +37,6 @@ public:
     ~Web() override {};
 
 private:
-    WebMatch *currentMatch = nullptr;
-
-private:
+    std::unique_ptr<WebMatch> currentMatch;
 };
 #endif

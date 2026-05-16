@@ -2,6 +2,7 @@
 #define __obsidian_h__
 #include <plugin.h>
 #include <filesystem>
+#include <memory>
 
 class ObsidianMatch : public Match
 {
@@ -23,7 +24,7 @@ public:
     std::string getName() const override { return "obsidian"; };
 
 private:
-    std::vector<std::filesystem::path> notes;
+    std::vector<std::unique_ptr<ObsidianMatch>> notes;
     // Obsidian specific settings
 };
 

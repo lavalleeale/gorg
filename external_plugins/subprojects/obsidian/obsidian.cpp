@@ -69,7 +69,7 @@ void ObsidianPlugin::setSettings(const nlohmann::json &settings)
     {
         if (entry.is_regular_file() && entry.path().extension() == ".md")
         {
-            notes.push_back(entry.path());
+            notes.push_back(std::make_unique<ObsidianMatch>(entry.path()));
         }
     }
 }
@@ -79,9 +79,9 @@ std::vector<Match *> ObsidianPlugin::getMatches(const std::string &input) const
     std::vector<Match *> matches;
     for (const auto &note : notes)
     {
-        if (hasAllChars(input, note.string()))
+        if (hasAllChars(input, note->getDisplay()))
         {
-            matches.push_back(new ObsidianMatch(note));
+            matches.push_back(note.get());
         }
     }
     return matches;

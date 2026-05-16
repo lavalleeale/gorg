@@ -28,19 +28,10 @@ std::vector<Match *> Dmenu::getMatches(const std::string &input) const
     {
         if (hasAllChars(input, item->getDisplay()))
         {
-            matches.push_back(new DmenuMatch(item->getDisplay(), item->getRelevance(input)));
+            matches.push_back(item.get());
         }
     }
     return matches;
-}
-
-Dmenu::~Dmenu()
-{
-    for (auto &item : cache)
-    {
-        delete item;
-    }
-    cache.clear();
 }
 
 void Dmenu::setSettings(const nlohmann::json &settings)
@@ -59,6 +50,6 @@ void Dmenu::setSettings(const nlohmann::json &settings)
         if (line.empty())
             break;
         lineCount++;
-        cache.push_back(new DmenuMatch(line, -lineCount));
+        cache.push_back(std::make_unique<DmenuMatch>(line, -lineCount));
     }
 }

@@ -9,9 +9,54 @@
 #define GET_SYMBOL dlsym
 #endif
 
-std::vector<Plugin *> loadPluginDirectory(const std::string &path)
+LoadedPlugin::LoadedPlugin(LoadedPlugin &&other) noexcept
+    : handle(other.handle), plugin(std::move(other.plugin))
 {
-    std::vector<Plugin *> plugins;
+    other.handle = nullptr;
+}
+
+LoadedPlugin &LoadedPlugin::operator=(LoadedPlugin &&other) noexcept
+{
+    if (this != &other)
+    {
+        plugin.reset();
+#ifndef _WIN32
+        if (handle)
+        {
+            dlclose(handle);
+        }
+#else
+        if (handle)
+        {
+            FreeLibrary(handle);
+        }
+#endif
+        handle = other.handle;
+        plugin = std::move(other.plugin);
+        other.handle = nullptr;
+    }
+    return *this;
+}
+
+LoadedPlugin::~LoadedPlugin()
+{
+    plugin.reset();
+#ifndef _WIN32
+    if (handle)
+    {
+        dlclose(handle);
+    }
+#else
+    if (handle)
+    {
+        FreeLibrary(handle);
+    }
+#endif
+}
+
+std::vector<LoadedPlugin> loadPluginDirectory(const std::string &path)
+{
+    std::vector<LoadedPlugin> plugins;
     namespace fs = std::filesystem;
     // check if the user has plugins
     if (!fs::is_directory(path))
@@ -24,13 +69,12 @@ std::vector<Plugin *> loadPluginDirectory(const std::string &path)
         {
             try
             {
-                Plugin *plugin = loadPlugin(entry.path().string());
-                plugins.push_back(plugin);
+                plugins.push_back(loadPlugin(entry.path().string()));
             }
             catch (const std::exception &e)
             {
                 // Handle loading error (e.g., log it)
-                std::cerr << "Failed to load plugin: " << e.what() << std::endl;
+                std::cerr << "Failed to load plugin " << entry.path() << ": " << e.what() << std::endl;
             }
         }
     }
@@ -38,7 +82,7 @@ std::vector<Plugin *> loadPluginDirectory(const std::string &path)
     return plugins;
 }
 
-Plugin *loadPlugin(const std::string &path)
+LoadedPlugin loadPlugin(const std::string &path)
 {
 #ifdef _WIN32
     auto handle = LoadLibraryA(path.c_str());
@@ -61,5 +105,9 @@ Plugin *loadPlugin(const std::string &path)
     if (!create)
         throw std::runtime_error("Missing create symbol");
 
-    return create();
+    Plugin *plugin = create();
+    if (!plugin)
+        throw std::runtime_error("create returned null");
+
+    return LoadedPlugin(handle, std::unique_ptr<Plugin>(plugin));
 }

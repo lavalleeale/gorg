@@ -3,6 +3,7 @@
 
 // C++ Standard Library
 #include <filesystem>
+#include <memory>
 
 // External Libraries
 #include <nlohmann/json.hpp>
@@ -34,6 +35,6 @@ public:
     ~Drun() override {};
 
 private:
-    std::vector<DrunMatch *> cache;
+    std::vector<std::unique_ptr<DrunMatch>> cache;
 };
 #endif

@@ -1,5 +1,6 @@
 // C++ Standard Library
 #include <fstream>
+#include <filesystem>
 #include <iostream>
 #include <mutex>
 
@@ -25,7 +26,6 @@ void loadFromDir(const std::string &directory)
         std::ifstream file(directory + "/config.json");
         if (!file.is_open())
         {
-            std::cerr << "Could not open settings file: " << directory + "/config.json" << std::endl;
             return;
         }
 
@@ -171,7 +171,13 @@ void saveLastQuery(const std::string &query)
 
         j["lastQuery"] = query;
 
+        std::filesystem::create_directories(std::filesystem::path(configPath).parent_path());
         std::ofstream outFile(configPath);
+        if (!outFile.is_open())
+        {
+            std::cerr << "Could not open settings file for writing: " << configPath << std::endl;
+            return;
+        }
         outFile << j.dump(4);
         outFile.close();
     }

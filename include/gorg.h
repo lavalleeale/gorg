@@ -3,9 +3,9 @@
 
 // C++ Standard Library
 #include <string>
+#include <memory>
 
 // GTK/GLib Libraries
-#include <giomm/cancellable.h>
 #include <giomm/simpleactiongroup.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/hvbox.h>
@@ -28,13 +28,6 @@ public:
     int run();
 
 private:
-    struct ImageInfo
-    {
-        Gtk::Image *image;
-        std::string iconPath;
-        bool isFile;
-    };
-    std::vector<ImageInfo> imagesToLoad;
     void handleRunResult(Match *match);
 
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("one.lavallee.gorg");
@@ -46,9 +39,8 @@ private:
 
     TransparentWindow window;
 
-    Finder *finder;
+    std::unique_ptr<Finder> finder;
     Match *selectedMatch = nullptr;
-    Glib::RefPtr<Gio::Cancellable> imageCancellable;
     float imageSize = getImageSize();
 };
 #endif

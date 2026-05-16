@@ -1,6 +1,8 @@
 #ifndef __run_h__
 #define __run_h__
 
+#include <memory>
+
 // External Libraries
 #include <nlohmann/json.hpp>
 
@@ -34,6 +36,6 @@ public:
     ~Run() override {};
 
 private:
-    std::vector<RunMatch *> cache;
+    std::vector<std::unique_ptr<RunMatch>> cache;
 };
 #endif

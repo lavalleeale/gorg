@@ -28,8 +28,6 @@
           libsigcxx
           harfbuzz
           stdenv.cc.cc.lib # For libstdc++
-          meson
-          ninja
         ];
       in {
         packages = {
@@ -40,17 +38,24 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ pkgs.pkg-config pkgs.makeWrapper ];
+            nativeBuildInputs = [ pkgs.meson pkgs.ninja pkgs.pkg-config pkgs.makeWrapper ];
 
             buildInputs = dependencies;
 
             configurePhase = ''
+              rm -rf build
               meson setup build
             '';
 
             buildPhase = ''
               meson compile -C build
             '';
+
+            checkPhase = ''
+              meson test -C build
+            '';
+
+            doCheck = true;
 
             installPhase = ''
               mkdir -p $out/bin
@@ -74,7 +79,7 @@
         };
 
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [ pkgs.pkg-config pkgs.gdb ];
+          nativeBuildInputs = [ pkgs.meson pkgs.ninja pkgs.pkg-config pkgs.gdb ];
           buildInputs = dependencies;
         };
       });

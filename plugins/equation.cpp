@@ -30,9 +30,9 @@ std::string trim(std::string str)
 
 std::vector<Match *> Equation::getMatches(const std::string &input) const
 {
-    if (currentMatch->setInput(input))
+    if (currentMatch && currentMatch->setInput(input))
     {
-        return {currentMatch};
+        return {currentMatch.get()};
     }
     else
     {
@@ -73,5 +73,5 @@ bool EquationMatch::setInput(const std::string &input)
 void Equation::setSettings(const nlohmann::json &settings)
 {
     pluginSettings = settings;
-    currentMatch = new EquationMatch("", 0, pluginSettings.value("relevance", 1));
+    currentMatch = std::make_unique<EquationMatch>("", 0, pluginSettings.value("relevance", 1));
 }
