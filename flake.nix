@@ -29,6 +29,9 @@
           harfbuzz
           stdenv.cc.cc.lib # For libstdc++
         ];
+        runtimePath = pkgs.lib.makeBinPath (with pkgs; [
+          coreutils
+        ]);
       in {
         packages = {
           default = self.packages.${system}.gorg;
@@ -71,6 +74,7 @@
                 --prefix LD_LIBRARY_PATH : "${
                   pkgs.lib.makeLibraryPath dependencies
                 }" \
+                --prefix PATH : "${runtimePath}" \
                 --set GORG_SYSTEM_PLUGIN_PATH "$out/lib/gorg/plugins" \
                 --prefix GIO_EXTRA_MODULES : "${pkgs.glib-networking}/lib/gio/modules" \
                 --prefix XDG_DATA_DIRS : "$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH" \

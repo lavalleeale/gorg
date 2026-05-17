@@ -1,5 +1,8 @@
 // C++ Standard Library
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 
 // GTK/GLib Libraries
@@ -89,7 +92,10 @@ void Gorg::search(bool skipUpdate)
         {
             break;
         }
-        Gtk::Label *label = Gtk::manage(new Gtk::Label(match->getDisplay()));
+        const std::string display = match->getDisplay();
+        const std::string iconName = match->getIcon();
+
+        Gtk::Label *label = Gtk::manage(new Gtk::Label(display));
         label->set_line_wrap(true);
         label->set_line_wrap_mode(Pango::WrapMode::WRAP_WORD_CHAR);
         label->set_ellipsize(Pango::EllipsizeMode::ELLIPSIZE_END);
@@ -97,28 +103,40 @@ void Gorg::search(bool skipUpdate)
         label->set_size_request(50, -1);
         label->show();
         Gtk::Image *icon = nullptr;
-        if (!match->getIcon().empty())
+        if (!iconName.empty())
         {
             icon = Gtk::manage(new Gtk::Image);
             icon->set_pixel_size(32);
 
-            bool isFile = (match->getIcon().find('/') != std::string::npos);
+            bool isFile = (iconName.find('/') != std::string::npos);
             if (isFile)
             {
                 try
                 {
-                    auto pix = Gdk::Pixbuf::create_from_file(match->getIcon());
-                    auto scaled = pix->scale_simple(static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())), static_cast<int>(imageSize), Gdk::INTERP_BILINEAR);
-                    icon->set(scaled);
+                    auto pix = Gdk::Pixbuf::create_from_file(iconName);
+                    if (pix && pix->get_height() > 0 && pix->get_width() > 0)
+                    {
+                        const int scaledHeight = std::max(1, static_cast<int>(std::round(imageSize)));
+                        const int scaledWidth = std::max(1, static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())));
+                        auto scaled = pix->scale_simple(scaledWidth, scaledHeight, Gdk::INTERP_BILINEAR);
+                        if (scaled)
+                        {
+                            icon->set(scaled);
+                        }
+                    }
                 }
                 catch (const Glib::Error &ex)
+                {
+                    std::cerr << "Icon load failed: " << ex.what() << std::endl;
+                }
+                catch (const std::exception &ex)
                 {
                     std::cerr << "Icon load failed: " << ex.what() << std::endl;
                 }
             }
             else
             {
-                icon->set_from_icon_name(match->getIcon(), Gtk::ICON_SIZE_LARGE_TOOLBAR);
+                icon->set_from_icon_name(iconName, Gtk::ICON_SIZE_LARGE_TOOLBAR);
             }
             icon->show();
         }
