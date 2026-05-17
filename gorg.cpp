@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <sstream>
+#include <thread>
 
 // GTK/GLib Libraries
 #include <glibmm/optioncontext.h>
@@ -55,6 +57,8 @@ int Gorg::run()
 
 void Gorg::setupActions()
 {
+    thumbnailDispatcher.connect([this]()
+                                { handleThumbnailUpdates(); });
     prompt.signal_activate().connect([this]()
                                      {
                                         if (!finder->getMatches().empty() && optionsScroll.is_visible()) {
@@ -66,6 +70,7 @@ void Gorg::setupActions()
 
 void Gorg::search(bool skipUpdate)
 {
+    const std::uint64_t generation = ++thumbnailGeneration;
     const std::string query = prompt.get_text();
 
     if (!options.is_visible())
@@ -111,27 +116,15 @@ void Gorg::search(bool skipUpdate)
             bool isFile = (iconName.find('/') != std::string::npos);
             if (isFile)
             {
-                try
+                const std::string cacheKey = thumbnailCacheKey(iconName);
+                auto cached = thumbnailCache.find(cacheKey);
+                if (cached != thumbnailCache.end())
                 {
-                    auto pix = Gdk::Pixbuf::create_from_file(iconName);
-                    if (pix && pix->get_height() > 0 && pix->get_width() > 0)
-                    {
-                        const int scaledHeight = std::max(1, static_cast<int>(std::round(imageSize)));
-                        const int scaledWidth = std::max(1, static_cast<int>(std::round(imageSize / pix->get_height() * pix->get_width())));
-                        auto scaled = pix->scale_simple(scaledWidth, scaledHeight, Gdk::INTERP_BILINEAR);
-                        if (scaled)
-                        {
-                            icon->set(scaled);
-                        }
-                    }
+                    icon->set(cached->second);
                 }
-                catch (const Glib::Error &ex)
+                else
                 {
-                    std::cerr << "Icon load failed: " << ex.what() << std::endl;
-                }
-                catch (const std::exception &ex)
-                {
-                    std::cerr << "Icon load failed: " << ex.what() << std::endl;
+                    queueThumbnailLoad(iconName, icon, generation);
                 }
             }
             else
@@ -161,6 +154,102 @@ void Gorg::search(bool skipUpdate)
         options.add(*button);
         button->show();
     }
+}
+
+std::string Gorg::thumbnailCacheKey(const std::string &path) const
+{
+    std::ostringstream key;
+    key << path << '\n' << static_cast<int>(std::round(imageSize));
+    return key.str();
+}
+
+void Gorg::queueThumbnailLoad(const std::string &path, Gtk::Image *image, std::uint64_t generation)
+{
+    const std::string cacheKey = thumbnailCacheKey(path);
+    const int scaledHeight = std::max(1, static_cast<int>(std::round(imageSize)));
+    {
+        std::lock_guard<std::mutex> lock(thumbnailMutex);
+        thumbnailQueue.push_back({generation, path, cacheKey, image, scaledHeight});
+    }
+    startQueuedThumbnailLoads();
+}
+
+void Gorg::startQueuedThumbnailLoads()
+{
+    constexpr unsigned int maxConcurrentThumbnailLoads = 4;
+
+    while (true)
+    {
+        ThumbnailRequest request;
+        {
+            std::lock_guard<std::mutex> lock(thumbnailMutex);
+            while (!thumbnailQueue.empty() && thumbnailQueue.front().generation != thumbnailGeneration)
+            {
+                thumbnailQueue.pop_front();
+            }
+            if (activeThumbnailLoads >= maxConcurrentThumbnailLoads || thumbnailQueue.empty())
+            {
+                return;
+            }
+            request = thumbnailQueue.front();
+            thumbnailQueue.pop_front();
+            activeThumbnailLoads++;
+        }
+
+        std::thread([this, request]()
+                    { loadThumbnail(request); })
+            .detach();
+    }
+}
+
+void Gorg::loadThumbnail(ThumbnailRequest request)
+{
+    Glib::RefPtr<Gdk::Pixbuf> pixbuf;
+    try
+    {
+        pixbuf = Gdk::Pixbuf::create_from_file(request.path, request.size, request.size, true);
+    }
+    catch (const Glib::Error &ex)
+    {
+        std::cerr << "Icon load failed: " << ex.what() << std::endl;
+    }
+    catch (const std::exception &ex)
+    {
+        std::cerr << "Icon load failed: " << ex.what() << std::endl;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(thumbnailMutex);
+        if (pixbuf)
+        {
+            thumbnailUpdates.push_back({request.generation, request.cacheKey, request.image, pixbuf});
+        }
+        if (activeThumbnailLoads > 0)
+        {
+            activeThumbnailLoads--;
+        }
+    }
+    thumbnailDispatcher.emit();
+}
+
+void Gorg::handleThumbnailUpdates()
+{
+    std::vector<ThumbnailUpdate> updates;
+    {
+        std::lock_guard<std::mutex> lock(thumbnailMutex);
+        updates.swap(thumbnailUpdates);
+    }
+
+    for (const auto &update : updates)
+    {
+        if (update.generation != thumbnailGeneration)
+        {
+            continue;
+        }
+        thumbnailCache[update.cacheKey] = update.pixbuf;
+        update.image->set(update.pixbuf);
+    }
+    startQueuedThumbnailLoads();
 }
 
 void Gorg::setupArguments(int argc, char *argv[])
