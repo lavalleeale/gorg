@@ -73,6 +73,7 @@ gorg --modes run,equation,web
 gorg --starting-query "1 + 2 * 3"
 gorg --auto-restore
 gorg --big
+gorg --version
 gorg --option web.searchUrl=https://duckduckgo.com/?q=
 ```
 

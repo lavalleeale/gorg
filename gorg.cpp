@@ -1,4 +1,5 @@
 // C++ Standard Library
+#include <cstdlib>
 #include <iostream>
 
 // GTK/GLib Libraries
@@ -187,6 +188,13 @@ void Gorg::setupArguments(int argc, char *argv[])
     bigEntry.set_description("Enable or disable big mode (default: disabled)");
     group.add_entry(bigEntry, bigFlag);
 
+    Glib::OptionEntry versionEntry;
+    bool versionFlag = false;
+    versionEntry.set_long_name("version");
+    versionEntry.set_short_name('v');
+    versionEntry.set_description("Print version information and exit");
+    group.add_entry(versionEntry, versionFlag);
+
     option_context.set_main_group(group);
 
     try
@@ -197,6 +205,12 @@ void Gorg::setupArguments(int argc, char *argv[])
     {
         std::cerr << "Option parsing failed: " << ex.what() << std::endl;
         throw ex;
+    }
+
+    if (versionFlag)
+    {
+        std::cout << "gorg " << GORG_VERSION << std::endl;
+        std::exit(EXIT_SUCCESS);
     }
 
     std::vector<std::string> allModes;

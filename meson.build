@@ -1,7 +1,7 @@
 project(
   'gorg',
   'cpp',
-  version: '0.6.0',
+  version: '0.7.0',
   default_options: ['cpp_std=c++20', 'warning_level=3', 'buildtype=release', 'b_lto=true'],
 )
 
@@ -34,6 +34,7 @@ executable(
   sources: src_files,
   include_directories: inc_dirs,
   dependencies: [gtkmm_dep, curl_dep],
+  cpp_args: ['-DGORG_VERSION="@0@"'.format(meson.project_version())],
   cpp_pch: './pch/gorg_pch.h',
   install: true,
 )
