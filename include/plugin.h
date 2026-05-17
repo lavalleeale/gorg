@@ -10,6 +10,8 @@
 
 #include <nlohmann/json.hpp>
 
+#define GORG_PLUGIN_API_VERSION 1
+
 class Plugin
 {
 public:

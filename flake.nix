@@ -34,7 +34,7 @@
           default = self.packages.${system}.gorg;
           gorg = pkgs.stdenv.mkDerivation {
             pname = "gorg";
-            version = "0.7.0";
+            version = "0.8.0";
 
             src = ./.;
 
@@ -44,11 +44,14 @@
 
             configurePhase = ''
               rm -rf build
+              rm -rf external_plugins/build
               meson setup build
+              meson setup external_plugins/build external_plugins
             '';
 
             buildPhase = ''
               meson compile -C build
+              meson compile -C external_plugins/build
             '';
 
             checkPhase = ''
@@ -60,12 +63,15 @@
             installPhase = ''
               mkdir -p $out/bin
               cp build/gorg $out/bin/
+              mkdir -p $out/lib/gorg/plugins
+              cp external_plugins/build/subprojects/*/*.so $out/lib/gorg/plugins/
 
               # Wrap the executable with proper environment variables
               wrapProgram $out/bin/gorg \
                 --prefix LD_LIBRARY_PATH : "${
                   pkgs.lib.makeLibraryPath dependencies
                 }" \
+                --set GORG_SYSTEM_PLUGIN_PATH "$out/lib/gorg/plugins" \
                 --prefix GIO_EXTRA_MODULES : "${pkgs.glib-networking}/lib/gio/modules" \
                 --prefix XDG_DATA_DIRS : "$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH" \
                 --set GSETTINGS_SCHEMAS_PATH "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"

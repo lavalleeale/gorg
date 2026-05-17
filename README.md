@@ -137,7 +137,7 @@ External plugins are loaded from:
 - `~/.config/gorg/plugins`
 - `GORG_SYSTEM_PLUGIN_PATH`, or `/usr/local/share/gorg/plugins` by default
 
-Plugins implement the `Plugin` interface and export `extern "C" Plugin *create()`. Matches returned from `getMatches` must remain valid until the next plugin update or plugin destruction; the caller treats them as borrowed pointers.
+Plugins implement the `Plugin` interface and export `extern "C" Plugin *create()` plus `extern "C" int gorg_plugin_api_version()`. The version function must return `GORG_PLUGIN_API_VERSION` from `plugin.h`; incompatible plugins are skipped at load time. Matches returned from `getMatches` must remain valid until the next plugin update or plugin destruction; the caller treats them as borrowed pointers.
 
 ## Verification
 

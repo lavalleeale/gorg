@@ -53,3 +53,8 @@ extern "C" Plugin *create()
 {
     return new SamplePlugin();
 }
+
+extern "C" int gorg_plugin_api_version()
+{
+    return GORG_PLUGIN_API_VERSION;
+}
